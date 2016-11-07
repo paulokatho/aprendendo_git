@@ -1,0 +1,289 @@
+
+
+			Git e GitHub / Gist-Pequenos trechos de código
+			
+			
+- Git é um versionador de projetos e GitHub é é um famoso repositório de código, uma rede social do Git.
+
+- Git foi criado em 2005 por Linus Torvalds.
+- GitHub foi criado em 2008
+	- O github possui um serviço para o compartilhamento de arquivos únicos ou parte de
+		códigos: Gist.
+		
+		Gist é um repositório git que está no link: gist.github.com
+	
+	- Todo gist é um repositório git. O Gist permite o campartilhamento de pequenos 
+		trechos de código.
+	- Ele é muito bacana para pequenos trechos de códigos publicos ou privados e que pode
+		até ter comentários. Uma forma bem rápida e prática de compartilhar e armazenar
+		trechos de códigos.
+		
+	- Depois que publicou um trecho de código é possível fazer revisar ou editar e depois 
+		é só clicar no Update public gist.
+
+****************	Download do Git	****************
+		
+- Ir em msysgit.github.io que ele identifica seu sistema operacional e redireciona a página
+	para pagina de download.
+	
+	- Apos baixar, instalar o github.
+	
+	- Abra o terminal Bash e utilize alguns comandos basicos iniciais para ir se familiarizando.
+	
+	- ls : lista itens
+	- git --version : versão do git que está usando
+	- Ctrl+l : limpa a tela
+	
+	- cd desktop : cd muda de diretorio, nesse caso vai para o diretório desktop
+	- cd .. : para voltar um diretório
+	- mkdir pasta : mkdir cria uma pasta, aqui chamada pasta no diretorio que voce informou
+	- rmdir pasta : rmdir remove a pasta do diretório
+	
+
+  ****************	Fazendo o cadastro no git com o e-mail e senha	****************
+
+- git config --global user.name "alfredoborba"
+- git config --global user.email "alfborba@gmail.com"
+
+  
+****************	Versionando arquivos	****************
+  
+ - Criando uma pasta no Desktop para inserir arquivos nela.
+ 
+	cd desktop
+	mkdir arquivos_git
+	cd arquivos_git
+	
+	- Criando um arquivo .txt dentro da pasta arquivos_git
+	
+		touch arq1.txt
+	
+	- Inseriando texto no arq1.txt e lendo o conteúdo do arquivo. Ir até onde está a pasta arquivos_git
+	
+		echo "esse eh meu arquivo git" >> arq1.txt - cria o texto no arquivo arq1.txt
+	
+		cat arq1.txt - lê o conteúdo do arquivo
+	
+	
+  ****************	Tornando um diretório em um Repósitorio Git	**************** 
+  
+- dentro do diretorio escolhido, por exemplo, arquivos_git digitar.
+
+	git init
+	
+	- Ali dentro do diretorio será criado um arquivozinho .git e o repositorio já está inicializado
+	
+
+****************	Verificando a situação do arquivo ou arquivos no repositório	**************** 
+  
+  - digitar git status e os arquivos que não estão rastreados ficarao em vermelho
+  
+	git status
+	
+- Para rastrear o arquivo
+
+	git add arq1.txt 
+	git status
+	
+	- Agora o arquivo vai aparecer em verde na tela
+	
+- Mesmo o arquivo tendo sido rastreado pelo git ele ainda não foi commitado. Então agora
+	gravar os arquivos no repositorio.
+	- O nome do commite vai ser "arquivo inicial", mas pode ser qualquer nome facil para 
+		montar suas versões. Esse nome é somente para fins didáticos.
+	
+	git commit -m "arquivo inicial"
+	
+	git status
+	
+	- O git vai avisar que não existe mais o arquivo para ser commitado. Ou seja, ele vai 
+		desaparecer do repositorio e vai subir.
+		
+- Agora ir no arq1.txt e inserir mais algum texto "Mais um texto" para modificarmos a versão
+	do arquivo.
+
+	echo "Mais um texto"
+	cat arq1.txt
+	git status
+
+	git add arq1.txt
+	commit -m "inserida uma nova linha"
+	git status
+	
+
+  ****************	Vendo o historico das alterações	**************** 	
+  
+- Log de verificação e controle de alterações
+
+	git log
+	
+	- Mostra o autor, email, quantidade de commites, data, hora...
+	
+	
+	
+  ****************	Compartilhando as alterações no GitHub	**************** 	
+  
+- Ir no github.com e criar um novo repositório <New Repository>
+- Inserir um nome para o repositorio "curso_git"
+- Description: Repositório do curso de Git e GitHub
+- Selecionar público
+- Clicar em <Create Repository>
+	
+	- Assim acaba de ser criado um repositório vazio no GitHub.
+
+  ****************	Apontando nosso repositóio para o GitHub	**************** 
+  
+- Certifique-se que está no diretório correto, exemplo, desktop/arquivos_git
+- Ir até o repositorio que foi criado e selecionar o endereço do link, algo parecido com:
+	https://github.com/paulokatho/aprendendo_git.git
+- Voltar no Bash e digitar e colar o endereço do link copiado:
+	git remote add origin https://github.com/paulokatho/aprendendo_git.git
+
+
+  ****************	Enviando e Recebendo as alterações para o GitHub	**************** 
+  
+- Enviando as alterações para a página do github
+- Digitar no Bash git status e verificar se o que você quer já está commitado.
+- digitar o push para enviar os arquivos
+
+	git status
+	git push origin master
+	
+	- Agora recebendo o projeto do github
+	
+	- Ir até a pagina do github e pegar o endereço para fazer o download, chamado de "clone"
+		do projeto. Clique no botão verde <Clone or download> e copie o link
+	
+	- Crie uma nova pasta no diretorio que quiser fazer o download e vá até o bash e entre no 
+		diretório, por exemplo, desktop/teste.
+	- Insira o comando, lembrando que o link você tem que ter copiado do seu repositorio.
+	
+		git clone https://github.com/paulokatho/aprendendo_git.git
+		
+	- Depois disso pode digitar ls e entre na pasta que foi baixada. Depois digite cat para poder ver o conteúdo do 
+		arquivo
+		
+		ls
+		cd curso_git (nome da pasta que você baixou)
+		cat arq1.txt (voce verifica o conteúdo que foi baixado)
+		
+	
+  ****************	Rastreando todos os arquivos de uma vez	**************** 	
+  
+- Crie mais dois arquivos de texto na pasta arquivos_git, por exemplo.
+- Insira textos neles e salve nesse diretorio arquivos_git mesmo.
+- git add rastreia todos os arquivos de uma só vez.
+- depois só commitar de dar um git push
+
+	git add .
+	git commit -m "Arquivos adicionados agora"
+	git push origin master
+	
+	- Pronto! Seus arquivos estão no repositório do git hub
+	- Só ir la na página do github e atualizar que seus arquivos já estão la...
+	
+  ****************	Área Stage	**************** 	
+  
+- Quando se rastreia um arquivo com o git add, o git coloca esses arquivos em uma área chamada
+	"stage".
+	- Uma vez que o arquivo está na area stage todas as mudanças nesse arquivo serão examinadas, portando
+		todas as alterações deve ser seguidas do comando git add para serem enviadas ao 
+		repositorio posteriormente.
+	- Então quando voce deu um add seu arquivo está rastreado, mas não foi gravado.
+		- Se você fez alguma alteração antes de gravar e não deu add, as novas alterações não estão
+			rastreadas e nem gravadas.
+
+			
+  ****************	Ignorando arquivos	**************** 	
+  
+- Se por acaso você ter arquivos no seu diretório que não quer que seja rastreado,
+	você pode ignorar esses arquivos
+- Se por exemplo, você tiver um arquivo "meus_arquivos.txt".
+
+	- Você cria uma arquivo que será ignorado e coloca dentro desse arquivo os nomes que quer que seja ignorado
+	
+		touch .gitignore
+		echo "arquivos que serão ignorados.txt" >> .gitignore
+		cat .gitignore
+		
+		git status
+		
+			- Agora subir o arquivo .gitignore
+		
+		git add .gitignore
+		git commit -m "Adicionando gitignore"
+		git push origin master
+		
+		- Ir no site do github e atualizar para verificar o arquivo gitignore e dentro dele os arquivos
+			serão ignorados
+	
+	- Dá para ignorar diretórios
+	
+		Exemplo: Também é possível abrir o arquivo gitignore e colocar na mão o que será ignorado
+		
+		echo "tmp/" >> .gitignore
+		
+	- Ignorando varios arquivos de uma vez, com a mesma extensão
+	
+		echo "*.log" >> .gitignore
+		
+	
+	--- Obs
+	
+	- Em java o pessoal ignora os arquivos .jar e .class
+	- Em python ignoram os arquivos .pyc
+	- No windows quem trabalha com C++ ignora .exe
+	
+	
+		
+  ****************	Rastreando e Commitando	ao mesmo tempo	**************** 			
+  
+			*** Obs: git commit -am (a rastreia e m é de mensagem) ***
+			
+- Faça alguma alteração no arquivo arq1.txt, insira algum novo texto e agora vai ter algo
+	para ser rastreado e commitado.
+	
+	git status
+	git commit -am "arquivo 1 alterado"
+	git status
+	git push origin master
+	
+	- Vá ate o site do github e verifique seu arquivo para ver se ele está com as alteraçãos
+		que você modificou.
+		
+		
+		
+  ****************	Verificando o histórioco do seu repositório	**************** 		
+	
+- Imagine todo o historico depois de um tempo que você utiliza o github, vai ter bastante
+	informação no log. Digite git log e veja como já está seu historico.
+	
+- Podemos ver por exemplo os 3 últimos commits com git log -n 3, o número depende do que você precisa
+
+- Resumo dos commits git log --oneline
+
+- Resumo dos arquivos alterados com número de linhas adicionadas e excluídas git log --stat
+
+
+	git log
+	git log -n 3
+	git log --oneline
+	git log --stat
+	
+  ****************	Removendo arquivos do seu repositório	**************** 	
+  
+ 
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
