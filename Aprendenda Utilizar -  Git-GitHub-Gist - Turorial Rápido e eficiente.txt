@@ -344,8 +344,140 @@
 
   ****************	Desfazendo mudanças COMMITADAS	**************** 
 
+- Insira um novo texto no arq.txt e faça o commit.
 
 
+	echo"Desfazendo mudanças comitadas" >> arq.txt
+	git status
+	git add arq.txt
+	git commit -m "Aprendendo desfazer mudanças comitadas"
+	
+- Após commmitar temos que encontrar o código do commit que queremos. Para isso
+	vamos ver o log e copie o código, por exemplo, c0c8ccb Aprendendo desfazer mudanças comitadas.
+	
+		git log -n 1 --oneline (uu git log --oneline e copie o código do commit que foi feito)
+		git revert --not-edit c0c8ccb
+		cat arq.txt (o texto ainda continua no arquivo)		
+		
+- Veja o conteúdo do seu arq.txt com cat e veja que o texto novo ainda está lá. 
+- Vamos reverter o arquivo que foi commitado com git reset e veja o status, vai estar em vermelho (modified: arq.txt).
+
+	git reset HEAD~1 (commit revertido - voltamos a alteração, ou seja ele volta a ficar vermelhor e na área de stage)
+	git status
+	
+- Como ele está na area stage ele voltou ao passo anterior.
+- Agora usando git reset hard, pois está na area de stage rastreado.
+	Então esse comando como visto algumas sessões anteriores é usado para desfazer alterações depois de ser rastreado.
+	E depois deste comando dá para ver que o status não há nada para comitar. 
+	Todas as alterações foram desfeitas.
+
+	git reset --hard
+	git status
+	cat arq.txt (veja que não está mais o texto "Aprendendo desfazer mudanças comitadas")
+	
+- Então você colocou ele na área stage rastreado e depois comitou. Depois desfez o commit. Logo depois foi retirado
+	também do stage.
+	
+
+  ****************	Vendo sobre hospedagem de projetos	**************** 
+  
+	Falando um pouquinho sobre hospedagem de projetos na internet. 
+	Existem varios sites para hospedagem e um deles é o github, outro muito bom é o Bitbucket. O grande diferencial do 
+gitbucket é que ele permite criar projetos privados gratuitamente e aceita guit. A finalidade destes serviços, assim como 
+o guithub é tornar visível seus projetos para o mundo todo.
+	Assim também como os projetos open source que podem ser acessados pelo mundo todo, todo desenvolvedor tem a chance de 
+conseguir ver o código destes projetos.
+	
+	O github hoje em dia é o maior provedor desse tipo de serviço e grandes projetos estão no github, como por exemplo,
+JQuery.
+	O github também é uma ferramenta colaborativa, pois permite a interação com outros programadores, ter projetos sendo 
+desenvolvidos com ajuda de outros desenvolvedores ao redor do mundo.
+	
+	Como exemplo pode ser o visto o projeto django, que é um framework web desenvolvido em python.
+	No site do github vá para pagina inicial e digite django e veja a quantidade de contribuidores (desenvolvedores) e
+também dá para ver o total de commits feitos.
+
+	Dessa forma você pode aprender com esses projetos, dar uma olhada em como o pessoal organiza, desenvolve a lógica, etc.
+
+	Muito bom dar uma olhada no código de outras pessoas para evoluir.
+
+	
+  ****************	Pull Request	**************** 	
+  
+	Pull Request é uma solução do github para a contribuição de projetos open source. Você pode contribuir para os projetos
+open source que estão alocados no github.
+
+	Como exemplo, vamos até o site do github e vamos pesquisar o projeto django.
+	Supondo que estejamos querendo começar a contribuir com o projeto depois de encontrar ele no github é só clicar
+em fork, assim o github estará fazendo uma cópia do repositório para o meu usuário.
+	Então se formos ali na nossa aba Repositories veremos que foi criado o repositório django.
+		
+		<clique em fork quando estiver no projeto django, por exemplo>
+	
+	Se quisermos contribuir com esse projeto, basta clonar ele como ensinado alguns itens acima. Então fique atento ao fazer 
+esse procedimento, pois clone o link do seu repositorio djando e não o clone do projeto deles. Se não você não irá conseguir 
+fazer o push, permissão negada.
+
+	Crie uma nova pasta no diretorio que você deseja e faça o clone/download do seu projeto lá.
+	Não esqueça de ir no git bash e entrar no diretorio onde você criou sua nova pasta, exemplo,
+desktop/projetos_git/django
+	Após estar no diretório corretor fazer o clone/download do projeto.
+	
+		git clone https://github.com/paulokatho/django.git
+		
+- Espere o download do projeto.
+
+- Agora todas as alterações que você quer ou precisa fazer, você pode comitar.
+
+- Mas para você conseguir de fato contribuir e enviar todas as alteração para o projeto inicial é necessário
+fazer o PULL REQUEST, para que seja feito um pull request do seu projeto.
+
+	Ir na aba <Pull Requests> lá no seu perfil do github.
+	As alterações que você vier a fazer no projeto django vão aparecer nesse lugar. E o pessoal do projeto django
+iria receber alguma notificação do proprio github. Dessa forma ele poderia estar pegando as alterações e adicionando
+ao projeto original. Dessa maneira que os projetos open source são criados e desenvolvidos por seus contribuidores.
+
+
+  ****************	Falando sobre as Branches	**************** 	
+
+	Nesse mesmo momento você tem que continuar mexendo no projeto original, mas quer desenvolver
+algo novo para você mesmo ou para mostrar para alguém. Ou uma nova funcionalidade, mas não quer mexer no projeto original.
+	Você então pode criar as branches para poder ter esse jeito de trabalhar de forma paralela ao projeto.
+	Todas as ferramentas de controle versão estão permitindo que você trabalhe com branches.
+	
+	Essa branche permite um tipo de trabalho independente do projeto principal. Em que pode ser comitado esses novos códigos
+sem afetar o projeto original ou outras branches.
+
+	O git oferece maneira muito ageis de se trabalhar com branches.
+	Veja um exemplo.
+	
+- No terminal do git bash digite git branch e será exibido os branches que você tem.
+	Não esquecer de retornar para a pasta de estudos, exemplo, desktop/arquivos_git.
+	
+		git branch
+	
+	- Será exibido no terminal um branche chamado master, esse branche é criado por default pelo proprio git.
+		Todas os commites efetuados por nós foi nesse branche master.
+	
+		- Existe um * do lado do nome do branch, isso indica que esse é o branch atual, no que estamos trabalhando.
+			Exemplo: * master
+			
+		- Pode-se dizer que todo branch é um apontador para um commit. A cada commit feito essa brach é movida 
+			automaticamente passando a apontar para esse novo commit.
+		- Por default o branch master aponta para o último commit que foi relizado.
+
+	
+  ****************	Criando seu primeiro branch	**************** 	
+  
+
+  
+  
+	
+	
+
+	
+	
+	
 
 
 
