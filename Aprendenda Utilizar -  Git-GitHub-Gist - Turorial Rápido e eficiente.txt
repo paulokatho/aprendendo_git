@@ -534,16 +534,54 @@ sem afetar o projeto original ou outras branches.
 	git checkout -b branch_novas_funcionalidades (cria e seta a nova branch)
 	
 - Verifique que está na nova branch antes de alterar o arq.txt.
+
 	echo "Commitando uma nova brach" >> arq.txt
 	git commit -am "Fazendo nosso primeiro commit na nova Branch" (rastreando e comitando num só comando)
-	git push origin master
+	git push origin branch_novas_funcionalidades (sempre dar o push na branch que você estiver, fique atento a esse detalhe)
 	
 - Vá até o seu repositorio no github para verificar seus arquivos comitados.
 - Lá vai ter um botão no lado esquerdo do seu profile chamado <Branch:master>, por exemplo.
 	Aqui nesse botão você pode mudar de branch para ver as alterações feitas na nova branch.
-	
 		
+	- Abra o arquivo arq.txt da branch_novas_funcionalidades, vai estar ali sua alteração, mas na branch master
+		não vai ter a alteração.
 	
+	Massa demais!!!
+		
+
+  ****************	Mesclando com nova Branch  **************** 
+
+- Leve em consideração a seguinte situação.
+	- Se as alterações feitas na branch nova foram aceitas e ela pode ser integrada no seu branch original, você
+		mescla essas alterações para que seu projeto original fique com as atualizações desejadas.
+		
+- Temos que verificar quais as branchs que não estão mescladas.
+	- Para isso voltar para a branch master e inserir os codigos abaixo.
+	
+		git checkout master (setando a branch master)
+		git branch --no-merged (vai aparecer a branch_novas_funcionalidades que ainda não foi mesclada)
+		
+	- Agora para mesclar.
+	
+		git merge branch_novas_funcionalidades -m "mesclando a nova branch"
+		
+		ls
+		cat arq.txt (agora vai estar na branch master a alteração feita na branch, mesclou certinho)
+	
+	- Verificando as branch que não estão mesclados não vai aparecer nada agora.
+	
+		git branch --no-merged
+		
+  ****************	Finalizando  **************** 
+  
+	Muito obrigado por ter dado visitado meu github e espero sinceramente ter podido ajudar
+		de alguma forma você.
+	Tentei montar algo facil e prático para que dessa de maneira, sem mistérios, você também
+		pudesse começar a ingressar no git e github.
+	
+	Muito sucesso e um grande abraço!
+	
+	Paulo André Vicente Fernandes.
 	
 	
 	
