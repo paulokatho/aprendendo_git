@@ -272,9 +272,77 @@
 	
   ****************	Removendo arquivos do seu repositório	**************** 	
   
+- Podemos remover os arquivos do nosso repositório.
+- Digite ls e verifique seus arquivos. Se não tiver outro arq2.txt para teste, crie um arq2.txt e faça o 
+	commit para ele subir para seu repositório.
+- Precisamos deletar e adicionar esse arquivo na stage.
+
+	ls
+	git rm arq2.txt (rm - deleta o arquivo e já insere na area de stage)
+	git commig -m "arq2.txt foi apagado"
+	git push origin master
+	
+- Ir no seu github e verificar que o arq2.txt foi deletado.
+	
  
+  ****************	Fazendo renomeação dos arquivos	**************** 
+  
+- Vamos renomear o nosso arq1.txt para arq.txt.
+
+	ls
+	git mv arq1.txt arq.txt
+	git status (renamed: arq1.txt -> arq.txt)
+	
+- No git status ele vai estar verde, então está na área de stage e está pronto para ser commitado
+
+	git commit -m "arq1.txt renomeado para arq.txt"
+	git push origin master
+	
+- Entre no seu github e atualize o browser e verifique as alterações.
 
 
+  ****************	Desfazendo mudanças NÃO RASTREADAS	**************** 
+	
+- Insira um texto no arq.txt e verifique o status. Depois com o comando checkout você consegue desfazer essas
+	alterações que ainda não foram rastreadas.
+	
+		echo arq.txt "Desfazendo mudanças não rastreadas"
+		git status (veja que ainda não foi para area de stage, o arquivo está em vermelho)
+		cat arq.txt (verifique o texto novo)
+		git checkout -- arq.txt
+		git status
+		cat arq.txt (verifique que o texto foi deletado)
+		
+- Digamos que você tenha deletado um arquivo sem querer, também é possível recuperar, antes dele estar
+	rastreado.
+	
+		git rm arq.txt
+		git status
+		git ls (verifique que o arquivo foi deletado)
+		git checkout HEAD -- arq.txt
+		ls (veja que o arquivo voltou para sua pasta)
+	
+  
+  ****************	Desfazendo mudanças RASTREADAS	**************** 	
+  
+- Arquivo rastreado é quando foi feito git add arq.txt
+- Inserir um novo texto no seu arq.txt. Para desfazermos as alterações.
+
+	echo "Desfazendo mudanças rastreadas" >> arq.txt
+	cat arq.txt (verifique o seu texto)
+	git add arq.txt (adicionando no stage)
+	git status (verificando que está verde)
+	
+- Se não for passado nenhum parâmetro será retirado todos os seus arquivos da area stage, onde estão
+	seus arquivos rastreados.
+	
+	git reset --hard
+	cat arq.txt (veja que não está mais o texto "Desfazendo mudanças rastreadas")
+	
+- O comando acima retira todos os arquivos da area de stage e desfaz as alterações nos arquivos.
+
+
+  ****************	Desfazendo mudanças COMMITADAS	**************** 
 
 
 
