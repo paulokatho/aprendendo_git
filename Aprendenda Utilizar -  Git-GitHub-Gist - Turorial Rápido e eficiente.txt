@@ -1,7 +1,21 @@
 
 
-			Git e GitHub / Gist-Pequenos trechos de código
+	********	Git e GitHub / Gist (Pequenos trechos de código)	********
+	
 			
+	Observação: Me deparei com um problema quando dei um commit sem acrescentar arquivo no rastreamento com git add.
+					Me voltou um erro assim: 
+			
+		git process seems to be running in this repository, e.g. an editor opened by 
+		'git commit'. Please make sure all processes are terminated then try 
+		again. If it still fails, a git process may have crashed in this repository 
+		earlier: remove the file manually to continue.
+			
+	A forma que consegui resolver foi digitando no terminal: rm -f ./.git/index.lock
+
+
+****************	O que é GIT	****************
+
 			
 - Git é um versionador de projetos e GitHub é é um famoso repositório de código, uma rede social do Git.
 
@@ -21,7 +35,7 @@
 	- Depois que publicou um trecho de código é possível fazer revisar ou editar e depois 
 		é só clicar no Update public gist.
 
-****************	Download do Git	****************
+****************   Download do Git	****************
 		
 - Ir em msysgit.github.io que ele identifica seu sistema operacional e redireciona a página
 	para pagina de download.
@@ -469,12 +483,67 @@ sem afetar o projeto original ou outras branches.
 	
   ****************	Criando seu primeiro branch	**************** 	
   
+- No terminal digite um nome para o seu novo brach. Você pode utilizar um nome mais sugestivo, como o nome do projeto,
+	ou o nome do que você quer mudar, exemplo, novas_funcionalidades_ajax. Aqui vou utilizar branch_1.
+- O git utiliza um HEAD para indicar em qual branch se está trabalhando.
 
-  
-  
+	git branch branch_1
+	git branch (veja os branchs que serão listados)
 	
+- Depois de listar você verá que o * ainda está no branch master (* master). Vamos ver agora como trocar de branch.
+
+- Após ser digitado o comando para ir para a nova branch, o HEAD vai apontar para a nova branch que informamos.
+
+	git checkout novo_branch (novo_branch, nome do branch que queremos selecionar)
 	
 
+  ****************	Criando uma branch e selecionando com um comando só	 **************** 
+  
+- Se você observar no fim da linha onde está indicando o diretorio que você se encontra tem um nome entre parênteses
+	esse nome é o nome da brach que você está selecionado, ele fica em azulzinho, exemplo (master).
+
+- Criando e setando o novo branch.
+
+	git checkout -b mensageria_jms
+	git branch (verifique que já está setado sua nova branch)
+	
+
+  ****************	Deletando sua branch	**************** 	
+  
+- Uma dica, caso se tenha algum commit na brach que se deseja deletar é necessário mudar o comando para -D.
+	Também não pode estar setado na branch que você quer deletar, então é só mudar de branch caso dê algum erro.
+	
+	- Apagando a branch que já teve commit.
+	
+		git branch -D mensageria_jms
+		
+	- Apagando uma branch sem essa branch ter tido commmit.
+	
+		git checkout master (indo pra a branch master)
+		git branch -d branch_1 (apagando a branch_1 que criamos anteriormente)
+		git branch (listando as branch que restaram)
+		
+		
+  ****************	Fazer commit na sua nova Branch  **************** 
+
+- Para este recurso vamos criar novamente uma branch nova para podermos fazer o commit.
+- Também fazer alteração em algum arquivo que esteja no nosso diretório.
+- Verifique se realmente você está na branch nova que você criou.
+
+	
+	git checkout -b branch_novas_funcionalidades (cria e seta a nova branch)
+	
+- Verifique que está na nova branch antes de alterar o arq.txt.
+	echo "Commitando uma nova brach" >> arq.txt
+	git commit -am "Fazendo nosso primeiro commit na nova Branch" (rastreando e comitando num só comando)
+	git push origin master
+	
+- Vá até o seu repositorio no github para verificar seus arquivos comitados.
+- Lá vai ter um botão no lado esquerdo do seu profile chamado <Branch:master>, por exemplo.
+	Aqui nesse botão você pode mudar de branch para ver as alterações feitas na nova branch.
+	
+		
+	
 	
 	
 	
