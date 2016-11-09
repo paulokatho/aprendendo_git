@@ -1,0 +1,38 @@
+
+13.1 - Estendendo o Thymeleafe
+
+- Estender o Thymeleaf é interessante para tornar o código mais limpo e de entendimento mais fácil.
+
+- Dialetos e Processadores
+
+- Dialetos e processadores já estamos trabalhando desde que começamos a trabalhar com thymeleaf e 
+	começamos criar nossas páginas.
+	
+	Dialetos: Exemplo
+		
+		xmlns:th="http://www.thymeleaf.org"
+		xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+		
+		Acima no "th ou layout" são os dialetos, mas não é só isso que são os dialetos. Eles são 
+		o conjunto que está com os processadores que implementam tudo que o dialeto faz.
+		
+		São os chamados Standards Dialects e também os Stardads Spring Dialects, como: 
+			th:field, th:object, th:include...etc.
+		
+		Mais ou menos assim: O processador é que implemanta o field. O processador que vai implementar
+		e entender o th:object, o th:each também, e por aí vai.
+		
+	Então quando dizemos que vamos estender o Thymeleaf, quer dizer que vamos criar um novo dialeto,
+	por exemplo, o dialeto BeeBee. E alguns processadores quando sentirmos a necessidade de criarmos algo
+	extra.
+	Digamos que queiramos criar um processador para chamar o th:classappend que faz a validação
+	com a classe has-erro, por exemplo, no campo sku. Digitariamos algo somente como BeeBee:fromgroup="sku".
+	
+	- Dá para verificar no WebConfing.java no public TemplateEngine templateEngine() {
+	
+														engine.addDialect(new LoyoutDialect(); 
+														engine.addDialect( new BeeBee(); }
+														
+	E então é só criar nossa classe dialeto e acrescentar como descrito acima.		
+
+	
