@@ -1,0 +1,86 @@
+
+	Novo atributo para classe de erro
+	
+	-Criaremos uma classe nova para ser inserida na div class "beebee:classforerror"
+	
+- Vamos criar o dialeto para o nosso sistema e criar os processadores para processar o que vamos
+	implementar.
+	Ex: th:classappend="${#fields.hasErrors('sku')} ? has-error", olha quanto codigo é necessario
+		para criar a classe erro e verificar se no campo sku existe algum erro e exibir a mensagem
+		na tela.
+		
+1- Criar o processador que vai tratar o th:classappend acima. Criar ele primeiro que vai fazer
+	o processamento do dialeto e depois criamos o dialeto.
+	
+	- Criar uma nova classe java chamada "ClassForErrorAttributeTagProcessor" dentro do pacote
+		beebee/thymeleaf.processor.
+	
+	Esse processador que criamos tem que extender a classe AbstractAttributetagProcessor. E implementar
+		o método doProcess().
+	
+	Implementar o contrutor:
+	
+	ClassForErrorAttributeTagProcessor(String dialectPrefix) { //prefixo do dialeto que vamos criar, exemplo "beebee" para beebee:classforerror = "..."
+		
+		super(Templatemode.HTML, dielalect, null, false, "NOME_ATRIBUTO", true, PRECEDENCIA, true);
+		//pois vamos mexer com html
+	}
+	
+	Criar uma atributo estatico: private static final String NOME_ATRIBUTO = "classforerror";
+	
+	Tambem uma constante: private final int PRECEDENCIA = 1000;
+	
+	- Implementar a logica do metodo doProcess();
+	
+	public class ClassForErrorAttributeTagProcessor extends AbstractAttributeTagProcessor{
+
+	private static final String NOME_ATRIBUTO = "classforerror";
+	private static int PROCEDENCIA = 1000;
+	
+	protected ClassForErrorAttributeTagProcessor(String dialectPrefix) {
+			super(TemplateMode.HTML, dialectPrefix, null, false, NOME_ATRIBUTO, true, PROCEDENCIA, true);
+	}
+
+
+		@Override
+		protected void doProcess(ITemplateContext context, IProcessableElementTag tag, AttributeName attributeName, 
+				String attributeValue, IElementTagStructureHandler structuredHandler) {
+			
+			// attributeValue por causa do field th:field da view
+			// contex, pois tem que informar o contexto, que é o que recebe o objeto cerveja, por ex. na view. th:object="${cerveja}"
+			boolean temErro = FieldUtils.hasErrors(context, attributeValue);
+			
+			if (temErro) {
+				String classesExistentes = tag.getAttributeValue("class");// passando a class que queremos la da view que seja carregada o que tem dentro dela nessa string "<div class="col-sm-2  form-group".....>"
+				structuredHandler.setAttribute("class", classesExistentes + "has-error");// aqui seta no atributo class as classes existentes + a classe has-error
+				
+			}
+		}		
+	}
+	
+	- Agora criar o dialeto na view como referencia ao namespace, exemplo no CadastroCerveja.html.
+		beebee:classforerror="sku"
+		
+		- Criar uma nova classe chamada BeeBeeDialect em beebee.thymeleaf.
+			Essa classe extends AbstractProcessorDialect.
+			
+			Acrescentar o método obrigatorio que tem que implementar gerProcessorString.
+			Criar o construtor do BeeBeeDialect().
+			
+			No construtor vamos passar no super() os parametros:
+			1- Criar o nome do dialeto: "Katho BeeBee"
+			2- O prefixo, ex: beebee que está na view beebee:classforerro="...";
+			3- StandardDialect.PROCESSOR_PRECEDENCE //esse é rocomendado pela documentação do thymeleaf
+			
+		- Agora no gerProcessorString()... :
+		final Set<IProcessor> processadores = new HasSet<>();
+		processadores.add(new ClassForErrorAttributeTagProcessor(dialectPrefix));
+		return processadores;
+		
+	- Acrescentar na view, ex, CadastroCerveja.html o namespace para o codigo reconhecer o dialeto que criamos.
+		Na tag <html> acrescentar.
+		xmlns:brewer="http//beebee.algaworks.com"
+		
+	- Agora só acrescentar o dialeto na classe WebConfig.
+		
+		engine.addDialect(new BeeBeeDialect());
