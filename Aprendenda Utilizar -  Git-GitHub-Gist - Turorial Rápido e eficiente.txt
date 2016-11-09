@@ -572,6 +572,10 @@ sem afetar o projeto original ou outras branches.
 	
 		git branch --no-merged
 		
+	- Observação: Se você for no seu github as alterações não estarão lá, pois você ainda não comitou, mas se você
+					der um cat arq.txt vai ver que a alteração que tinha na branch branch_novas_funcionalidades vai 
+					estar no arquivo arq.txt da branch master.
+		
   ****************	Finalizando  **************** 
   
 	Muito obrigado por ter dado visitado meu github e espero sinceramente ter podido ajudar
@@ -581,7 +585,7 @@ sem afetar o projeto original ou outras branches.
 	
 	Muito sucesso e um grande abraço!
 	
-	Paulo André Vicente Fernandes.
+	Paulo André Vicente Fernandes (paulokatho).
 	
 	
 	
