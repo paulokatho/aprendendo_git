@@ -121,12 +121,12 @@
 				
 					<label class="control-label">Foto</label>
 					
-					<div id="upload-drop" class="bb-upload">
+					<div id="upload-drop" class="bb-upload  hidden">
 						<i class="glyphicon glyphicon-cloud-upload"></i>
 						<span>Arraste a foto aqui ou</span>
 						<a class="bb-upload-form-file">Selecione<input id="upload-select" type="file" accept=".jpg,.jpeg,.png"/></a>
 					</div>
-				</div>				
+				</div>							
 			</div>
 			
 			<div class="form-group">
@@ -137,6 +137,8 @@
 	</div>
 	
 	<div th:replace="estilo/CadastroRapidoEstilo :: modal"></div>
+	
+	<th:block th:replace="hbs/FotoCerveja"></th:block>
 </section>
 	
 <!-- Bloco acrescentado na Aula 11.2 - Salvando estilo rapido com ajax / -->	
@@ -144,6 +146,7 @@
 	<script th:src="@{/javascripts/estilo.cadastro-rapido.js}"></script>
 	<script th:src="@{/javascripts/vendors/uikit.min.js}"></script>
 	<script th:src="@{/javascripts/vendors/upload.min.js}"></script>
+	<script th:src="@{/javascripts/vendors/handlebars.min.js}"></script>
 	
 	<script>
 	$(function() {
@@ -154,7 +157,13 @@
 				action: '/beebee/fotos',
 				complete: function(resposta) {
 						$('input[name=foto]').val(resposta.nome);
-						$('input[name=contentType]').val(resposta.contenType);					
+						$('input[name=contentType]').val(resposta.contenType);
+						
+						var htmlFotoCervejaTemplate = $('#foto-cerveja').html();
+						var template = Handlebars.compile(htmlFotoCervejaTemplate);
+						var htmlFotoCerveja = template({nomeFoto: resposta.nome});
+						
+						var containerFotoCerveja = $('.js-container-foto-cerveja');
 				}
 		};
 		
