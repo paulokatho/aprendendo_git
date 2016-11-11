@@ -1,0 +1,81 @@
+
+14.2 Component de upload da foto com drag and drop
+
+- Ver o projetinho para upload de fotos no getuikit.com/docs/upload.html
+	- Vamos adicionar a caixinha onde se encontra "Attach binaries by dropping them here or selecting oneEscolher arquivo."
+		no projeto para fazer o upload das imagens de cerveja.
+
+- Ir no cadastro de cerveja antes do botão de salvar e acrescentar:
+	
+	<div class="row">
+		<div class="form-group col-sm-12">
+			<label class="control-label">Foto</label>
+			
+			<div id="upload-drop" class="bb-upload">
+				<i class="glyphicon glyphicon-cloud-upload"></i>
+				<span>Arraste a foto aqui ou</span>
+				<a class="bb-upload-form-file">Selecione<input id="upload-select" type="file" accept=".jpg,.jpeg,.png"/></a>
+			</div>
+		</div>				
+	</div>
+	
+- Ir no Uikit e fazer o download para configurar no projeto.
+	- Copiar para o projeto o css: upload.min.css e acrescentar o link no head para o arquivo css.
+		<link rel="stylesheet" th:href="@{/stylesheets/vendors/upload.min.css}"/>
+		
+	- Copiar o arquivo .js uikit.min.js e o arquivo da pasta components upload.min.js
+	- Acrescentar no fim da pagina no bloco para javascrip o <script>
+	
+		<script th:src="@{/javascripts/vendors/uikit.min.js}"></script>
+		<script th:src="@{/javascripts/vendors/upload.min.js}"></script>
+		
+	- E para teste no mesmo bloco onde esta esse javascript acrescentar a função:
+		
+		<script>
+			$(function() {
+				var settings = {
+						type: 'json',
+						filelimit: 1,
+						allow: '*.(jpg|jpeg|png)'
+				};
+				
+				UIkit.uploadSelect($('#upload-select'), settings);
+				UIkit.uploadDrop($('#upload-drop'), settings);
+			});
+		</script>
+		
+- Abrir o arquivo beeBee.css e acrescentar
+	
+	/* Upload */
+	.bb-upload {
+		padding: 15px;
+		
+		border: 1px dashed #ddd;
+		border-radius: 4px;
+		background: #fafafa;
+		
+		text-align: center;
+	}
+
+	.bb-upload-form-file {
+		display: inline-block;
+		vertical-align: middle;
+		position: relative;
+		overflow: hidden;
+		margin-bottom: 1px;
+	}
+
+	.bb-upload-form-file > input[type=file] {
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 1;
+		width: 100%;
+		opacity: 0;
+		cursor: pointer;
+		
+		font-size: 500px;
+	}
+		
+	
+	
