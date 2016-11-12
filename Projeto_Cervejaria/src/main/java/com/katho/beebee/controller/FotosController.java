@@ -19,8 +19,8 @@ public class FotosController {
 	@Autowired
 	private FotoStorage fotoStorage;
 	
-	@PostMapping /* Esse somente a partir do Spring 4.3 */
-	//@RequestMapping(method = RequestMethod.POST) *** A assinatura acima substitui essa.
+	//@RequestMapping(method = RequestMethod.POST) *** A assinatura abaixo substitui essa.
+	@PostMapping /* Esse @PostMapping somente a partir do Spring 4.3 */	
 	public DeferredResult<FotoDTO> upload(@RequestParam("files[]") MultipartFile[] files) { //aqui vamos receber varios tipos de arquivo (jpg,png...) então definir Mult...
 		
 		DeferredResult<FotoDTO> resultado = new DeferredResult<>();
@@ -29,8 +29,6 @@ public class FotosController {
 		Thread thread = new Thread(new FotoStorageRunnable(files, resultado, fotoStorage));
 		thread.start();
 		
-		
 		return resultado;
-		
 	}
 }
