@@ -22,6 +22,7 @@ public class FotoStorageLocal implements FotoStorage {
 	private Path localTemporario;
 	
 	public FotoStorageLocal() {
+		
 		// dentro de HOME vamos criar uma pasta beebeefotos e depois chamamos o método criarPastas()
 		this(getDefault().getPath(System.getenv("USERPROFILE"), ".beebeefotos"));
 		
@@ -36,7 +37,8 @@ public class FotoStorageLocal implements FotoStorage {
 	
 	@Override
 	public String salvarTemporariamente(MultipartFile[] files) {
-		String novoNome = null;// a variavel foi implementada aqui, pois se estourar exception o catch consegue capturar
+		// a variavel foi implementada aqui, pois se estourar exception o catch consegue capturar
+		String novoNome = null;
 		if(files != null && files.length > 0) {
 			MultipartFile arquivo = files[0];
 			novoNome = renomearArquivo(arquivo.getOriginalFilename());
@@ -50,16 +52,17 @@ public class FotoStorageLocal implements FotoStorage {
 	}
 	
 	private void criarPastas() {
-		// aqui pode lançar uma exception então vamos tratar
-			
+		
+			// aqui pode lançar uma exception então vamos tratar			
 			try {
 				Files.createDirectories(this.local);
 				this.localTemporario = getDefault().getPath(this.local.toString(), "temp");
 				Files.createDirectories(this.localTemporario);// vai criar no diretorio acima a pasta "temp"
 				
-				/*esse if vai criar no console do eclipse essas informações para que nós possamos mapear e verificar
-					corretamente o que está acontecendo no sistema. Aqui quando subir a aplicação ele já vai criar as 
-					pastas e mostrar no logo os paths
+				/*
+					Esse if vai criar no console do eclipse essas informações para que nós possamos mapear e verificar
+						corretamente o que está acontecendo no sistema. Aqui quando subir a aplicação ele já vai criar as 
+						pastas e mostrar no logo os paths
 				*/
 				if(logger.isDebugEnabled()) {
 					logger.debug("Pastas criadas para salvar fotos.");
@@ -74,7 +77,8 @@ public class FotoStorageLocal implements FotoStorage {
 	private String renomearArquivo(String nomeOriginal) {
 		String novoNome = UUID.randomUUID().toString() + "_" + nomeOriginal;
 		
-		if(logger.isDebugEnabled()) { //habilitando o logger
+		//habilitando o logger
+		if(logger.isDebugEnabled()) { 
 			logger.debug(String.format("Nome original: %s, novo nome: %s", nomeOriginal, novoNome));
 		}
 		
