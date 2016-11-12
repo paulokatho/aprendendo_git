@@ -1,0 +1,192 @@
+
+	- Upload da foto com Ajax
+	
+- Neste momento a foto não esta sendo submetida para lugar nenhum quando arrastamos a foto ou 
+	clicamos em selecionar fotos.
+	- Foi acrescentado um action no javascript da pagina de cadastro de cerveja com endereço
+		mas esse endereço não existe.
+		
+		action: '/beebee/fotos'
+		
+Primeiros passos:
+
+- No pacote de controllers criar uma nova classe chamada FotosController.
+	- Criamos um novo controller, pois o upload da foto não precisa ser no cadastro de cerveja e no 
+		cadastro de cerveja recebemos só o nome dela.
+	- Ao invés de anotarmos a classe como @Controller como feito até agora podemos deixar mais 
+		simples, pois essa requisição está sendo feita via Ajax. 
+		A anotação agora fica @RestController
+		
+		- Qual a diferença?
+			Se olhar a documentação do @RestController dá pra ver que essa anotação continua sendo um
+				Controller, poré ela retorna um @ResponseBody e com isso não precisamos ficar fazendo
+				casting e anotando na assinatura do método public o @ResponseBody.
+	
+@RestController
+@RequestMapping("/fotos")
+public class FotosController {
+	
+	@PostMapping // Esse somente a partir do Spring 4.3
+	//@RequestMapping(method = RequestMethod.POST) *** A assinatura acima substitui essa.
+	public String upload(MultipartFile[] files) { //aqui vamos receber varios tipos de arquivo (jpg,png...) então definir Mult...
+		
+		System.out.println(">>> " + files.length);
+		return "Ok";		
+	}
+}
+
+- Acima somente para testes.
+- Se iniciarmos o servidor novamente e dar refresh na tela e selecionar uma imagem não vai dar certo ainda.
+	No console do browser vai estar informando no content-type que não tem um Multpart file configurado e está
+		retornando erro 500.
+	Então tem que configurar o servidor para receber o tipo Multpart.
+
+- Para resolver isso é ir no AppInitializer para sobrescrever um novo método.
+
+	@Override
+	protected void customizeRegistration(Dynamic registration) {
+		registration.setMultipartConfig(new MultipartConfigElement(""));
+	}
+	
+	- Indo na documentação do MultpartConfigElement é possivel ver que no construtor dele ele recebe 2 tipos de construtor.
+		1- Ele recebe uma String location public MultpartConfigElement(String location)
+			- Esse location é onde o servidor tomcat vai armazenar os arquivos temporarios. E se deixar lá no AppInitilizer
+				a String vazia o servidor decido sozinho onde ele vai armazenar esses arquivos.
+			- Ele já decide e armazena também: this.maxFileSize = -1L, this.maxRequestSize = -1L e this.fileSizeTrashold = 0;
+		Então vamos deixar por conta do servidor: registration.setMultipartConfig(new MultipartConfigElement(""));
+		
+		2- Nesse outro construtor ele recebe String location, long maxFileSize, long maxRequestSize, int fileSizeThreshold.
+
+- Depois de configurar o AppInitializer se formos na pagina e selecionar um arquivo de imagem, ele tem que mostrar o tamanho
+	no console do eclipse, e nesse caso o tamnho é "0".
+	
+	No console fazer o carregamento e analisar o Header, agora ficou 200 ok e se vermos o content-type vai estar o Multpart,
+		no content type length vai estar o tamanho da imagem, mas esta aparecendo zero no console do eclipse.
+		
+		Se analisar o RequestPayLoad:
+		
+		Request PayLoad
+		------WebKitFormBoundaryOxpbVOKN9ocUb3KK
+		Content-Disposition: form-data; name="files[]"; filename="5516994607878-1416578344.jpg"
+		Content-Type: image/jpeg
+		
+	- Observe que o nome dele é "files[]", então temos que acrescentar esse array files[] no String upload
+		ou seja, no controller de fotos, com uma assinatura de @RequestParam passando o array file[] ... 
+		agora fica assim o método: public String upload(@RequestParam("files[]") MultipartFile[] files) {}
+		
+		- Agora no console do eclipse ao submeter a foto está voltando valor 1 no length. Ou seja, o servidor
+			está recebendo o arquivo.
+		
+		- No método do fotos controller dar uma alterada para ver o tamanho do arquivo nessa linha.
+			
+			System.out.println(">>> " + files[0].getSize());
+			return "Ok";
+			
+			- O tamanho é o tamanho da foto que voce submeteu.
+			
+- Recaptulando:
+
+	- Acrescentou a url que quero que faça o POST no action do javascript no cadastroCerveja.html
+	- Configurei o Controller para receber esse arquivo.
+	- E configurei/registrei uma configuração no AppInitializer passando um MultpartConfigelement("")
+		E o files[0].getSize() só mostra o tamanho do arquivo.
+		
+	Código pronto até a aula 14.5.
+	
+	- Fotos controller
+	- FotoStorageRunnable
+	- FotoDTO.java
+	- <interface>FotoStorage
+
+- Fotos controller
+
+@RestController
+@RequestMapping("/fotos")
+public class FotosController {
+	
+	@Autowired
+	private FotoStorage fotoStorage;
+	
+	@PostMapping /* Esse somente a partir do Spring 4.3 */
+	//@RequestMapping(method = RequestMethod.POST) *** A assinatura acima substitui essa.
+	public DeferredResult<FotoDTO> upload(@RequestParam("files[]") MultipartFile[] files) { //aqui vamos receber varios tipos de arquivo (jpg,png...) então definir Mult...
+		
+		DeferredResult<FotoDTO> resultado = new DeferredResult<>();
+		
+		//criando uma nova thread para devolver a resposta do servidor
+		Thread thread = new Thread(new FotoStorageRunnable(files, resultado, fotoStorage));
+		thread.start();
+		
+		
+		return resultado;
+		
+	}
+}
+
+- FotoStorageRunnable
+
+public class FotoStorageRunnable implements Runnable {
+
+	private MultipartFile[] files;
+	private DeferredResult<FotoDTO> resultado;
+	private FotoStorage fotoStorage;
+
+	public FotoStorageRunnable(MultipartFile[] files, DeferredResult<FotoDTO> resultado, FotoStorage fotoStorage) {
+		
+		this.files = files;
+		this.resultado = resultado;
+		this.fotoStorage = fotoStorage;
+		
+	}
+
+	@Override
+	public void run() {
+		
+		this.fotoStorage.salvarTemporariamente(files);
+		// TODO: Aqui é a parte demorada - Salvar a foto no sistema de arquivos...
+		String nomeFoto = files[0].getOriginalFilename();
+		String contentType = files[0].getContentType();
+		resultado.setResult(new FotoDTO(nomeFoto, contentType)); // isso chega no browser para o cliente como response		
+
+}
+	
+- FotoDTO.java
+
+public class FotoDTO {
+
+	
+	private String nome;
+	private String contentType;
+	
+	public FotoDTO(String nome, String contentType) {
+		this.nome = nome;
+		this.contentType = contentType;
+	}
+	
+	public String getNome() {
+		return nome;
+	}
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+	public String getContenType() {
+		return contentType;
+	}
+	public void setContenType(String contenType) {
+		this.contentType = contenType;
+	}	
+}	
+
+- FotoStorage.java
+public interface FotoStorage {
+
+	public void salvarTemporariamente(MultipartFile[] files);
+	
+}
+		
+
+	
+		
+	
+
+		
