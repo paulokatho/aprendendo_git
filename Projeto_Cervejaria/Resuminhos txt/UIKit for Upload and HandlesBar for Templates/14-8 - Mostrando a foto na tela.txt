@@ -1,0 +1,358 @@
+
+			Mostrando a foto na tela
+			
+- Após arrastar a foto ou selecionar a foto para o upload vamos deixa-la sendo exibida abaixo do campo de upload na tela para o usuário ver
+	a imagem que ele irá salvar.
+	
+1 - Uma forma de fazer é ir no FotosController  e fazer ele devolver a foto que foi feita upload baseado no nome da foto. 
+		Então deixe ao menos uma foto de teste no diretório para fazer ir testando durante a implementação.
+	
+	- Criando um método public que retorna um array de byte e que passa como parametro uma String
+		E fazendo o retorno do método com um método chamado recuperarFotoTemporaria que vamos implementar mais tarde.
+		Esse método public bytu[] vai ter uma anotação do tipo @GetMapping() que vai mapear a url que foi definida no @RequestMapping da classe controller
+			Vou colocar em forma de comentário também para facilitar o entendimento.
+	- Até aqui ficou assim:
+	
+			@GetMapping("/temp/{nome}")//aqui mapeia a !RequesMapping da anotão @RequestMapping dessa classe FotosController para acessar a pasta "temp" e {nome} vai virar uma váriavel que será usada abaixo na assinatura do metodo e que contém as informações da foto
+			public byte[] recuperarFototemporaria(@PathVariable String nome) {//@PathVariable utiliza o mesmo nome que está no {nome}, SEMPRE!	
+				return fotoStorage.recuperarFotoTemporaria(nome); //método que vamos criar e o nome é o nome que está na @PathVariable
+			}
+	
+	- Esse método irá retornar um array de bytes que vai conter a foto e vai ser a forma que vamos colocar uma tag <img> no html da página html de cadastro de cerveja e vai mostrar a foto para o usuário.
+	
+2 - Agora criar o método recuperarFotoTemporaria(String nome) na Interface FotoStorage.
+
+	public interface FotoStorage {
+
+		public String salvarTemporariamente(MultipartFile[] files);
+		public byte[] recuperarFotoTemporaria(String nome);		
+	}
+	
+3 - Vamos agora la na implementação da interface, ou seja, na classe FotoStorageLocal.
+		Adiciona o método na classe para ele ser implementado.
+			Adicionar abaixo do último public para as classes privadas ficarem por último.
+			
+	- É tranquilo de implementar com o método File do javaIO.
+	
+		@Override
+		public byte[] recuperarFotoTemporaria(String nome) {
+		
+		// O readAllbytes() está esperando um path, e o path está em localTemporario...
+		// O método resolve concatena o (nome) com o path que readAllBytes está esperando
+		// Esse método lança uma excessão, vamos tratar.
+			return Files.readAllBytes(this.localTemporario.resolve(nome));
+		}
+
+4 - Da forma que está aqui já da para testar. 
+		Ir no browser do e digitar, por exemplo (cada um tem um nome da foto diferente gerada ao gravar na pasta temp):
+		
+			http://localhost:8080/beebee/fotos/temp/366307ed-6c64-4a33-8303-dc4a69cfa4ea_Homer-Duff.jpg
+			
+		- Vai dar um erro na página, pois ele não vai encontrar a extensão (.jpg, .png, etc), por exemplo.
+			- O Spring está achando que você está querendo buscar uma extensão como forma de consumo.
+			- O Spring não mapeia o (.jpg).
+			
+	- Para receber esse ponto (.jpg) vai ser necessário utilizar uma expressão regular em FotosController no @GetMapping.
+	
+		- Só acrescentar: @GetMapping("/temp/{nome:.*}")
+		
+			- Agora ir na página e tentar acessa novamente acessar a url.
+			
+5 - Então agora se na tag <img> conseguirmos acessar esse endereço que utilizamos na url do browser, vamos conseguir exibir
+		a imagem para o usuário.
+		
+6- Ir em CadastroCerveja.html.
+
+	- No <div> que faz a região pontilhada do <Arraste a foto aqui ou Selecione>
+		- Essa é a div.
+		
+			<div class="row">
+				<div class="form-group col-sm-12">
+					<input type="hidden" th:field="*{foto}">
+					<input type="hidden" th:field="*{contentType}">
+				
+					<label class="control-label">Foto</label>
+					
+					<div id="upload-drop" class="bb-upload">
+						<i class="glyphicon glyphicon-cloud-upload"></i>
+						<span>Arraste a foto aqui ou</span>
+						<a class="bb-upload-form-file">Selecione<input id="upload-select" type="file" accept=".jpg,.jpeg,.png"/></a>
+					</div>
+				</div>				
+			</div>
+			
+	- A <div> que queremos é <div id="upload-drop" class="bb-upload">
+	
+		- Vamos acrescentar nela a classe hidden.
+		
+			<div id="upload-drop" class="bb-upload  hidden">
+		
+			- Depois de salvar e recarregar o servidor, se precisar recarregar. Ir no browser na tela de cadastro e atualizar a página
+				vai ver que o campo para selecionar foto vai sumir.
+
+		
+	- Acrescentar uma nova <div> para exibir a foto, nesse momento vamos acrescentare dentro da <div class="row"> que contém a parte de 
+		selecionar a foto. Essa nova <div> vai ficar antes da div de fechamento da classe row.
+		
+		<div class="row">
+			<div class="col-md-4"></div>
+			<div class= "col-md-4  text-center">
+				<a href="#" class="thumbnail"><!-- somente para ficar com um efeito qdo passa o mouse o href não vai a lugar nenhum -->
+					<img th:src="@{/fotos/temp/366307ed-6c64-4a33-8303-dc4a69cfa4ea_Homer-Duff.jpg}"><!-- Aqui está fixo só para testar se mostra na tela -->
+				</a>
+			</div>
+		</div>
+		
+		- Acrescentar essa div e rodar novamente o servidor e testar no browser. Vai aparecer a imagem na tela.
+		
+7 - Agora vamos criar um template que será para poder fazer a exibição dessa foto via .js.
+
+	- Vamos utilizar o http://handlebarsjs.com/ 
+		- É uma biblioteca bem legal para utilizar variáveis com código html para poder renderizar na tela depois a foto.
+		
+8 - No site ir no download e pegar somente o arquivo handlebars.min.js e clica no botão <copy> e copia a url.
+	- Para isso ir no download, mas procurar os "CDNs" e clicar em "cdnjs".
+		- Depois selecionar no site somente o fim do arquivo escrito como handlebars.min.js, copia esse trecho e coloca no fim da url que está 
+			aparecendo no seu browser.
+		- vai aparecer o código, aí é só fazer o download do arquivo.
+			- Copia para dentro do projeto no .js/vendors
+
+		
+	- Agora acrescenta na tela mais um .js no fim da página dentro do <th:block>
+		
+		<script th:src="@{/javascripts/vendors/handlebars.min.js}"></script>
+		
+9 - Vamos criar esse tamplate dentro de tamplates e crie uma nova pasta chamada "hbs"
+	
+	- Crie um arquivo html dentro dessa pasta chamado FotoCerveja.html
+
+	- Varios tipos de implementação para o handlebar, mas vamos usar a seguinte.
+		- Colocar dentro de um <script> esse script tem um "type" e dentro vai ter <div> que continua recebendo variaveis que no .js vai buscar
+			e o handlebar vai renderizar tudo la.
+	
+			<script id="foto-cerveja" type="text/x-handlebars-template">
+				<div class="row  js-foto-cerveja">
+					<div class="col-md-4"></div>
+					<div class="col-md-4  text-center">
+						<a href="#" class="thumbnail">
+							<img th:src="@{/fotos/temp/{{nomeFoto}}}"></img>
+						</a>
+						<button type="button" class="btn  btn-link  js-remove-foto"><span class="glyphicon  glyphicon-remove"></span></button>
+					</div>
+					<div class="col-md-4"></div>
+				</div>
+			</script>
+
+
+			- Na linha <img th:src="@{/fotos/temp/{{nomeFoto}}}"></img>, o nomeFoto for renderizado com o handlebars ele vai interpretar e vai 
+				passar isso via .js.
+		
+	- Voltar na CadastroCerveja.html e antes de terminar a taf </section> acrescentar um th:block para chamar nosso bloco de página.
+		
+		<th:block th:replace="hbs/FotoCerveja"></th:block>
+	</section>
+	
+	- Tirar o bloco <div> que acrescentamos na tela de cadastro de cerveja.
+		
+		<div class="row">
+			<div class="col-md-4"></div>
+			<div class= "col-md-4  text-center">
+				<a href="#" class="thumbnail"><!-- somente para ficar com um efeito qdo passa o mouse o href não vai a lugar nenhum -->
+					<img th:src="@{/fotos/temp/366307ed-6c64-4a33-8303-dc4a69cfa4ea_Homer-Duff.jpg}"><!-- Aqui está fixo só para testar se mostra na tela -->
+				</a>
+			</div>
+		</div>
+	
+	- Reiniciar o servidor e atualizar a página de cadastro para ver como ficou.
+	- Inspecionar o elemento e ver se o thymeleaf colocou na tela certinho. No network na parte de request e response não vai ter havido uma requiisição ainda
+		pois o handlebar ainda não renderizou esse pedaço, então a requisição ainda não foi feita.
+	
+		<script id="foto-cerveja" type="text/x-handlebars-template">
+			<div class="row  js-foto-cerveja">
+				<div class="col-md-4"></div>
+				<div class="col-md-4  text-center">
+					<a href="#" class="thumbnail">
+						<img src="/beebee/fotos/temp/{{nomeFoto}}"></img>
+					</a>
+					<button type="button" class="btn  btn-link  js-remove-foto"><span class="glyphicon  glyphicon-remove"></span></button>
+				</div>
+				<div class="col-md-4"></div>
+			</div>
+		</script>	
+	
+	- Acima é o código da página inspecionado e está trazendo o tamplate que está na pasta hbs e esta acrescentando na nossa página
+		CadastroCerveja.html.
+		
+- Veremos agora como o handlebars vai compilar esse código.
+ 
+ *************************************************
+ 
+	- Antes vamos tentar entender o que ele faz: 
+
+		- You can deliver a template to the browser by including it in a <script> tag.
+			<script id="entry-template" type="text/x-handlebars-template">
+			  <div class="entry">
+				<h1>{{title}}</h1>
+				<div class="body">
+				  {{body}}
+				</div>
+			  </div>
+			</script>
+
+		- Compile a template in JavaScript by using Handlebars.compile
+
+			var source   = $("#entry-template").html();
+			var template = Handlebars.compile(source); 
+	
+	- Precisamos passar o html da foto da cerveja que não é um objeto, mas é um html assim: $("#entry-template").html();.
+		- Esse html busca no template FotoCerveja.html e traz todo o conteúdo html para o .js da nossa página de CadastroCerveja.html
+			com #entry-template ou #foto-cerveja, faz mensão ao <script id="foto-cerveja" type="text/x-handlebars-template">
+		- Ou seja #foto-cerveja é o html da foto da cerveja.
+		- a função .html() traz o html do fotoCerveja.hmtl
+		
+	- O Handlebars.compile(source) tem o endereço do template do <script> que acrescentamos em nossa tela.
+
+	- Agora tenho o var template, e esse template é uma função do Handlebars
+	
+ *************************************************
+	
+- Após detalhar o que está sendo feito ali no template e na função .js da tela de CadastroCerveja, vamos seguir com a finalização do código acima.
+	E depois será colocado o codigo final da função e do conteudo que faz o upload do CadastroCerveja.html.
+	
+10 - Ir na CadastroCerveja e na função .js que faz o upload da foto acrescentar. 
+	- Depois da instrução que faz o upload vamos acrescentar nosso código, depois dessa linha ($('input[name=contentType]').val(resposta.contenType);).
+	
+	var htmlFotoCervejaTemplate = $('#foto-cerveja').html();
+	var template = Handlebars.compile(htmlFotoCervejaTemplate);
+	var htmlFotoCerveja = template({nomeFoto: resposta.nome});
+	
+	var containerFotoCerveja = $('.js-container-foto-cerveja');
+	
+		- Na linha var htmlFotoCerveja = template({nomeFoto: resposta.nome}), vai ser passado um contexto, e o que passar um contexto?
+			É passar um objeto com os parametros a serem definidos e que neste caso está indo buscar de FotoCerveja.html na linha <img th:src="@{/fotos/temp/{{nomeFoto}}}"></img>
+				vai ser o nomeFoto que está em th:src="@{/fotos/temp/{{nomeFoto}}} e esse nome foto precisa receber o nome da foto, e esse nome da foto vem de onde?
+					Vem do $('input[name=foto]').val(resposta.nome) que pegamos no começo dessa função .js em outra aula.
+			
+- Até agora ficou assim a função .js de CadastroCerveja.html.
+	<script>
+	$(function() {
+		var settings = {
+				type: 'json',
+				filelimit: 1,
+				allow: '*.(jpg|jpeg|png)',
+				action: '/beebee/fotos',
+				complete: function(resposta) {
+						$('input[name=foto]').val(resposta.nome);
+						$('input[name=contentType]').val(resposta.contenType);
+						
+						var htmlFotoCervejaTemplate = $('#foto-cerveja').html();
+						var template = Handlebars.compile(htmlFotoCervejaTemplate);
+						var htmlFotoCerveja = template({nomeFoto: resposta.nome});
+						
+						var containerFotoCerveja = $('.js-container-foto-cerveja');
+				}
+		};
+		
+		UIkit.uploadSelect($('#upload-select'), settings);
+		UIkit.uploadDrop($('#upload-drop'), settings);
+	});
+	</script>
+			
+11 - Agora já estamos com o html em mãos. Agora é necessário acrescentar ele no <div> de Selecione uma foto, na div do upload.
+	Esse é o lugar exato que iremos adicionar:
+	
+		<div id="upload-drop" class="bb-upload  hidden">
+			<i class="glyphicon glyphicon-cloud-upload"></i>
+			<span>Arraste a foto aqui ou</span>
+			<a class="bb-upload-form-file">Selecione<input id="upload-select" type="file" accept=".jpg,.jpeg,.png"/></a>
+		</div>
+	
+*****	
+	- Uma forma é: Podemos criar uma nova <div class="js-foto-cerveja"> para envolver a div acima. 
+		Isso para que possamos pegar da <div id="upload-drop" class="bb-upload  hidden"> o "drop e o hidden" para darmos um append depois.
+		
+	- E depois utlizamos JQuery para pegar esse js-foto-cerveja e colocar em uma váriavel "containerFotocerveja".
+		Usamos o JQuery para colocar a classe hidden na div: $('#upload-drop').addClass('hidden');	
+		
+	- Então em resumo, as três codificações abaixo irão fazer o seguinte: Quando uma nova foto for selecionad vai dar um hidden no campo de 
+		selecionar cerveja e irá ficar somente a imagem da cerveja com um (x) para remover, caso seja necessário.
+		- O containerFotoCerveja captura o .js js-foto-cerveja e esse container é adicionando, feito um ".append(htmlFotoCerveja)" para que 
+			a foto seja exibida naquele pedaço onde o js-foto-cerveja foi incluído na div.
+		- Não esquecer de remover o hidden da <div class> que contém o código para selecionar a cerveja.
+		
+- Agora só reiniciar o servidor e testar na página de cadastro de cerveja se vai exibir a imagem e vai desaparecer o campo de "Selecione uma foto".
+
+- Essa parte foi acrescentada no código.
+
+	$('#upload-drop').addClass('hidden');						
+	var containerFotoCerveja = $('.js-foto-cerveja');
+	containerFotoCerveja.append(htmlFotoCerveja);
+	
+	
+*****
+
+- Pensando. Agora que a imagem está sendo exibida na tela  e que o código inspecionado lá no browser está trazendo certinho as informação e 
+	exibindo na tela é hora de implementar o botão de remover a foto o botão "x" que tem na foto, pois caso tenha sido inserida uma foto errada por engano
+	seja possível remover e acrescentar a foto correta.
+	
+12 -  Depois que foi dado o append na página no bloco <div>: containerFotoCerveja.append(htmlFotoCerveja);
+		Agora é possível acrescentar na página FotoCerveja.html no botão Remove (x) nosso .js para remover a foto e implementarmos ele no .js da tela de 
+			CadastroCerveja.html.
+		
+		- Na FotoCerveja.html se encontra o js-remove-foto.
+			- Acrescente o .js "js-remove-foto".
+				<button type="button" class="btn  btn-link  js-remove-foto"><span class="glyphicon  glyphicon-remove"></span></button>
+		
+		- Então como já foi dado o appen(htmlFotoCerveja) no .js da página de CadastroCerveja.html vamos criar a função para remover a foto.
+		- Ao clicar em remover foto o que é para acontecer...
+		- No .js as o input NomeFoto e input content-type serão colocados em uma variável.
+			Era assim:
+				$('input[name=foto]').val(resposta.nome);
+				$('input[name=contentType]').val(resposta.contenType);
+				
+			Fica assim: 
+				var inputNomeFoto = $('input[name=foto]');
+				var inputContentType = $('input[name=contentType]');
+				
+				inputNomeFoto.val(resposta.nome);
+				inputContentType.val(resposta.contenType);
+		
+		- E passe todas as variaveis para o começo do código para ficar tudo padronizado e organizado. Depois segue o código com as alterações feitas.
+			
+	- Então depois que clicar no (x) para remover a foto:
+		- O uploadDrop tem que remover a classe hidden.
+		- E os campos inputNomeFoto e inputContentType ficarão com valores vazios.
+		
+			- Na <div> da CadastroCerveja que seleciona a foto mudar o nome do .js js-foto-cerveja para "js-container-foto-cerveja".
+		
+		- Também tempos que tirar o template FotoCerveja.html.		
+			- Para isso vamos acrescentar na <div class> dele um .js chamado "js-foto-cerveja".
+				<script id="foto-cerveja" type="text/x-handlebars-template">
+					<div class="row  js-foto-cerveja">
+	
+		- Essa função ficou assim:
+		
+			$('.js-remove-foto').on('click', function() {
+				$('.js-foto-cerveja').remove();
+				uploadDrop.removeClass('hidden');
+				inputNomeFoto.val('');
+				inputContentType.val('');
+			});
+			
+
+			
+- Resumindo:
+
+	- Acrescentamos em nossa página html CadastroCerveja o Template FotoCerveja que é um "handlebars".
+		- Aí deixamos uma parte para o thymeleaf processar e uma parte o handlebars.
+		
+			- O handlebars:
+				<img th:src="@{/fotos/temp/{{nomeFoto}}}"></img>
+				
+			- E o thymeleaf o restante na View CadstroCerveja.html.
+	
+	- Depois vamos colocar todo esse arquivo .js dentro de um arquivo javascript sozinho para ficar mais organizado 
+		e mais padronizado.
+		
+	
+	
