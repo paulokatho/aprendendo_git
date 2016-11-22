@@ -1,0 +1,243 @@
+
+		Criando pastas para salvar fotos
+		
+- Vamos criar uma implementação para salvar a foto que estamos recebendo no nosso FotosController. No caso a idéia é salvar a foto
+	na própria máquina, no servidor mesmo.
+- Para essa implementação vamos criar uma interface, vamos criar o Bean, pois se algum dia quisermos trocar essa implementação fica
+	fácil.
+	- Hoje estamos querendo implementar esse sistema de arquivos, mas algum dia podemos alocar o projeto em um seridor com outro tipo 
+		de sistemas de arquivos, ou quem sabe ainda armazenar em nuvem, como o S3 da Amazon.
+		
+	- Vamos criar primeiro o diretório, vamos ver o bean subindo, iniciando e criando o diretório.
+		E depois salvamos de fato no diretório.
+		
+	- VAmos criar dentro do pacote storage.local.
+		- Criar a classe FotoStorageLocal no pacote descrito acima.
+		- Detalhe o atributo final estatico Logger tem que ser importado da classe org.slf4j.Logger.
+	
+	- Criar 2 variáveis do tipo Path local e localTemporario, onde o local temporário ficam as fotos que estão sendo armazenadas antes 
+		de salvar de fato e depois elas são removidas e salvas no local.
+		- Pode-se criar facilmente um recurso para ficar de olho na pasta local temporário para que, caso haja imagem lá com mais de uma
+			hora parada, essa imagem seja removida.
+			
+	public class FotoStorageLocal {
+
+		private static final Logger logger = LoggerFactory.getLogger(FotoStorageLocal.class);
+		
+		private Path local;
+		private Path localTemporario;
+		
+		public FotoStorageLocal() {
+			
+		}
+	}
+	
+	- Obs: Como vamos utilizar no contrutor o método getDefault() várias vezes, podemos fazer uma impor static nele e aí fica mais fácil.
+		import static java.nio.file.FileSystems.getDefault; 
+		-Depois é só utilizar ele lá no método contrutor e no criarPastas().
+	
+	public FotoStorageLocal() {
+		// dentro de HOME vamos criar uma pasta beebeefotos e depois chamamos o método criarPastas()
+		this.local = getDefault().getPath(System.getenv("HOME"), "beebeefotos");
+		criarPastas();
+	}
+
+	private void criarPastas() {
+	// aqui pode lançar uma exception então vamos tratar
+		
+		try {
+			Files.createDirectories(this.local);
+			this.localTemporario = getDefault().getPath(this.local.toString(), "temp");
+			Files.createDirectories(this.localTemporario);// vai criar no diretorio acima a pasta "temp"
+			
+		} catch (IOException e) {
+			throw new RuntimeException("Erro criando pasta para salvar foto", e);
+		}		
+	}
+	
+- 	- Agora que foi criado os dois métodos, vamos criar no método criarPastas() a instrução que vai criar de fato as pastas. Existe um método
+		do CreateDefault java, mas não vamos utilizar, pois dependendo da configuração do sistema operacional esses arquivos temporarios 
+		podem ficar dias, semanas ou meses nessa pasta, então vamos fazer na mão.
+		
+	- Depois da linha em criarPastas(), Files.createDirectories(this.localTemporario);// vai criar no diretorio acima a pasta "temp"
+		acrescentar.
+		
+	if(logger.isDebugEnabled()) {
+		logger.debug("Pastas criadas para salvar fotos.");
+		logger.debug("Pasta default: " + this.local.toAbsolutePath());
+		logger.debug("Pasta temporária: " + this.localTemporario.toAbsolutePath());
+	}
+
+- Importante:
+
+	- Como vamos transformar nossa classe em um Bean?
+	- Vamos até a classe de serviço dentro do pacote de configuração.
+	
+	- Mas antes vamos pensar um pouquinho. Aqui colocamos a configuração para criar esse Bean que vai criar as pastas para fazermos upload da imagem
+		da cerveja. Mas e se caso em produção ou em teste quisermos utilizar o S3 da Amazon?
+		- Vamos implementar uma interface dentro da classe de serviço que implementa os métodos. E na classe interface propriamente dita declaramos
+			os métodos e aí clada classe que for utilizar chama o método de sistema de arquivos que quiser.
+			
+	- Então ir até o pacote .storage e criar a interface FotoStorage, se já não tiver.
+		
+		public interface FotoStorage {
+
+			public void salvarTemporariamente(MultipartFile[] files);			
+		}
+	
+	- Depois ir em FotoStorageLocal e dar um implements FotoStorage e declarar o método da classe FotoStorage.
+	
+	- Então agora na classe ServiceConfig a nossa configuração para sistemas de arquivo já fica configurado para receber e criar outros tipos de
+		sistemas de arquivo que poderão ser necessários na aplicação. Mas será implementado e mostrado melhor mais para frente.
+			- Essa FotoStorage eu vou utilizar em algum momento também em FotoStorageRunnable.
+			
+- E agora para injetar esse nosso bean FotoStorage para a classe FotoStorageRunnable.
+	Direto com @Autowired ele não vai funcionar, pois não é um bean gerenciado a classe runnable.
+	
+	- Então:
+	
+	- Ir até a classe FotosController e declarar a FotoStorage com a anotação @Autowired.
+		E depois chamar na linha que cria a nova thread: Thread thread = new Thread(new FotoStorageRunnable(files, resultado, fotoStorage));
+		
+	- Depois vamos na classe FotoStorageRunnable e vamos poder acessar a classe injetada.
+		Declaramos no construtor e depois inicializamos ela com o this.
+		
+	private FotoStorage fotoStorage;
+	
+	public FotoStorageRunnable(MultipartFile[] files, DeferredResult<FotoDTO> resultado, FotoStorage fotoStorage) {
+		
+		this.files = files;
+		this.resultado = resultado;
+		this.fotoStorage = fotoStorage;	
+	}
+	
+- E digamos agora se não quisermos esse path na hora de construir o bean FotoStorage.
+	- Ir na classe FotostorageLocal e iniciar um contrutor.
+	
+	- A classe FotoStorageLocal ficou assim.
+	
+		public class FotoStorageLocal implements FotoStorage {
+
+			private static final Logger logger = LoggerFactory.getLogger(FotoStorageLocal.class);
+			
+			private Path local;
+			private Path localTemporario;
+			
+			public FotoStorageLocal() {
+				// dentro de HOME vamos criar uma pasta beebeefotos e depois chamamos o método criarPastas()
+				// chamando o construtor da FotoStorageLocal
+				this(getDefault().getPath(System.getenv("HOME"), ".beebeefotos"));
+				
+			}
+			
+			public FotoStorageLocal(Path path) {
+				
+				this.local = path;
+				criarPastas();
+			}
+
+			private void criarPastas() {
+			// aqui pode lançar uma exception então vamos tratar
+				
+				try {
+					Files.createDirectories(this.local);
+					this.localTemporario = getDefault().getPath(this.local.toString(), "temp");
+					Files.createDirectories(this.localTemporario);// vai criar no diretorio acima a pasta "temp"
+					
+					/*esse if vai criar no console do eclipse essas informações para que nós possamos mapear e verificar
+						corretamente o que está acontecendo no sistema. Aqui quando subir a aplicação ele já vai criar as 
+						pastas e mostrar no logo os paths
+					*/
+					if(logger.isDebugEnabled()) {
+						logger.debug("Pastas criadas para salvar fotos.");
+						logger.debug("Pasta default: " + this.local.toAbsolutePath());
+						logger.debug("Pasta temporária: " + this.localTemporario.toAbsolutePath());
+					}
+				} catch (IOException e) {
+					throw new RuntimeException("Erro criando pasta para salvar foto", e);
+				}		
+			}
+
+			@Override
+			public void salvarTemporariamente(MultipartFile[] files) {
+				
+				System.out.println(">>>>> salvando a foto temporariamente <<<<<<");
+			}
+		}
+
+	- FotoStorageRunnable ficou assim:
+	
+		public class FotoStorageRunnable implements Runnable {
+
+			private MultipartFile[] files;
+			private DeferredResult<FotoDTO> resultado;
+			private FotoStorage fotoStorage;
+			
+			public FotoStorageRunnable(MultipartFile[] files, DeferredResult<FotoDTO> resultado, FotoStorage fotoStorage) {
+				
+				this.files = files;
+				this.resultado = resultado;
+				this.fotoStorage = fotoStorage;
+			}
+			
+			@Override
+			public void run() {
+				
+				// TODO: Aqui é a parte demorada - Salvar a foto no sistema de arquivos...
+				this.fotoStorage.salvarTemporariamente(files);		
+				
+				String nomeFoto = files[0].getOriginalFilename();
+				String contentType = files[0].getContentType();
+				resultado.setResult(new FotoDTO(nomeFoto, contentType)); // isso chega no browser para o cliente como response		
+			}
+		}
+
+	- Na classe ServiceConfig declaramos o Bean
+
+		@Bean
+		public FotoStorage fotoStorage() {
+			
+			// aqui declaramos qual implementação(StorageLocal, S3 Amazon) do profile (producao, teste) do sistema de arquivos que vamos utilizar
+			return new FotoStorageLocal();
+		}
+	
+	- FotosController injeta o Bean
+	
+		@Autowired
+		private FotoStorage fotoStorage;
+		
+		//criando uma nova thread para devolver a resposta do servidor
+		Thread thread = new Thread(new FotoStorageRunnable(files, resultado, fotoStorage));
+		thread.start();
+	
+	- Interface FotoStorage
+	
+		public interface FotoStorage {
+
+		public void salvarTemporariamente(MultipartFile[] files);
+			
+		}
+		
+- Portanto quando o servidor iniciar:
+
+	- Ele vai criar a configuração no ServiceConfig do Bean FotoStorage, esse FotoEstorage está dando um new em FotoStorageLocal
+		que também já vai ser criado.
+		- No FotoStorageLocal ele vai criar o caminho: this(getDefault().getPath(System.getenv("HOME"), ".beebeefotos"));
+		- Vai criar as pastas e exibir no logger as informações que nós configuramos.
+	
+- Para exibir no console do eclipse o log4j, alterar a configuração no arquivo xml log4j2.xml na linha
+	<Logger name="com.katho.beebee" level="debug"/>, para debug para que seja exibida as informações.
+	
+
+****************DETALHE MUITO IMPORTANTE************************************	
+
+- Para quem usa windows Usar a configuração do "USERPROFILE" ao invés de "HOME".
+
+	public FotoStorageLocal() {
+		// dentro de HOME vamos criar uma pasta beebeefotos e depois chamamos o método criarPastas()
+		this(getDefault().getPath(System.getenv("USERPROFILE"), ".beebeefotos"));
+		
+	}
+
+
+***************************************************************************		
