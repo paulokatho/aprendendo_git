@@ -1,0 +1,100 @@
+
+		Melhorando a disponibilidade da aplicação - retorno assíncrono
+		
+- Disponibilidade e performance são coisas diferentes.
+
+	- Disponibilidade: O quanto seu projeto está com disponibilidade para receber requisições.
+	- Performance	 : Velocidade, quanto ele responde rápido as ações.
+	
+	
+	Começando a melhorar a disponibilidade.
+	
+- Estamos guardando a foto quando ela é selecionada em algum lugar  temporário, pois o usuário
+	pode querer cancelar o carregamento, então o projeto só salva a foto quando o usuário clicar
+	no botão salvar.
+	
+- Vamos liberar a thread de requisições assim que recebe uma requisição, pois assim que a foto for
+	carregada a regra de negocio pode armazenar ou fazer o que quiser com a foto e isso pode tornar
+	a aplicação lenta.
+
+	- Quando seleciona a foto abre uma requisição http, feita com .js e json, mas continua sendo uma
+		requisição http. Quando ela chega na parte do servido ela tem um thread. 
+		O tomcat tem threads para receber requisições http.
+		
+		O sistema pode ter algumas threads configuradas, exemplo 10. Aí tem um cara consultando, outro
+			cadastrando cerveja, outro fazendo alguma outra ação e por aí vai. 
+		Se no mesmo instante todas as 10 threads estiverem ocupadas, digamos que uma delas é o upload da
+			foto, o servidor vai estar recebendo.
+			Essa foto pode estar sendo redimensionada para ser enviada para outro servidor, ou fazendo 
+				alguma outra regra de negocio.
+			Com isso essa thread vai ficar presa para essa ação, no entanto é possível liberar essa thread 
+				para outra requisição utilizar.
+			Assim a thread não fica presa e melhora a disponibilidade da aplicação.
+			
+	OBS:. Toda vez que alguma requisição tiver que fazer algum trabalho no servido e esse trabalho demorar 
+			um pouco, é possível utilizar essa tecnica que é o "RETORNO ASSÍNCRONO".
+			
+			Esse retorno assíncrono, significa liberar essa thread que está presa para receber outra requisição
+				e na hora que terminou o processamento da requisição ele pega essa thread novamente e envia
+				o response de volta para o cliente.
+				
+	
+	- Para fazer isso vamos até o FotosController e vamos alterar o retorno do método que implementamos.
+	
+		Mudar para DeferredResult<String> que é um retorno postergado. Depois mudamos o retorno <String> para
+			um tipo objeto com o nome da foto.
+			
+		@RestController
+		@RequestMapping("/fotos")
+		public class FotosController {
+	
+			@PostMapping 			
+			public DeferredResult<String> upload(@RequestParam("files[]") MultipartFile[] files) { //aqui vamos receber varios tipos de arquivo (jpg,png...) então definir Mult...
+					
+				DeferredResult<String> resultado = new DeferredResult<>();
+					
+				//criando uma nova thread para devolver a resposta do servidor
+				Thread thread = new Thread(new FotoStorageRunnable(files, resultado));
+				thread.start();
+				
+				System.out.println(">>> " + files[0].getSize());
+				return resultado;	
+				}
+		}
+		
+	- Nessa linha: Thread thread = new Thread(new FotoStorageRunnable(files, resultado));
+		
+		A classe FotoStorageRunnable recebe o files e trabalha esse files, quando ele terminar esse files ele passa para
+			o resultado ("Olha, terminei esse files") e aí ele retorna uma nova thread, essa é a tecnica assíncrona, pois 
+			trabalha de forma assíncrona.
+		
+		- Criar a classe:FotoStorageRunnable, no pacote beebee.storage
+		
+		public class FotoStorageRunnable implements Runnable {
+
+			private MultipartFile[] files;
+			private DeferredResult<String> resultado;
+			
+			public FotoStorageRunnable(MultipartFile[] files, DeferredResult<String> resultado) {
+				
+				this.files = files;
+				this.resultado = resultado;
+				
+			}
+			
+			@Override
+			public void run() {
+				
+				System.out.println(">>> " + files[0].getSize());//isso chega no console do eclipse mostrando o arquivo, a requisição que chegou
+				
+				// TODO: Aqui é a parte demorada - Salvar a foto no sistema de arquivos...
+				
+				System.out.println(" OK! Foto recebida!");// isso chega no browser para o cliente como response		
+
+			}
+		}
+		
+		- Esse cara quem vai trabalhar a foto e devolver o resultado.
+
+		
+		
