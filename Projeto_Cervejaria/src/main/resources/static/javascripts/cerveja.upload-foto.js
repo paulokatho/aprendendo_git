@@ -19,6 +19,7 @@ BeeBee.UploadFoto = (function() {
 	}
 	
 	UploadFoto.prototype.iniciar = function () {
+	//qdo uma requisição volta do servidor apos clicar em salvar esse método é executado
 		var settings = {
 			type: 'json',
 			filelimit: 1,
@@ -29,11 +30,17 @@ BeeBee.UploadFoto = (function() {
 		}
 		UIkit.uploadSelect($('#upload-select'), settings);
 		UIkit.uploadDrop(this.uploadDrop, settings);
+		
+		//para manter a foto na tela após clicar em salvar e não passar pela validação dos campos. Aula 14-10
+		if (this.inputNomeFoto.val()) {
+		//call() é para dizer que é o mesmo contexto que foi enviado na requisição anterior, não é um novo objeto
+			onUploadCompleto.call(this, {nome: this.inputNomeFoto.val(), contentType: this.inputContentType.val()});
+		}
 	}
 	
 	function onUploadCompleto(resposta) {
-		this.inputNomeFoto.val(resposta.nome);
-		this.inputContentType.val(resposta.contenType);	
+		this.inputNomeFoto.val(resposta.nome); // mudei aqui
+		this.inputContentType.val(resposta.contentType);	
 		
 		this.uploadDrop.addClass('hidden');
 		var htmlFotoCerveja = this.template({nomeFoto: resposta.nome});
