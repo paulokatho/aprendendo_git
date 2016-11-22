@@ -1,0 +1,252 @@
+
+			Refatorando script do upload da foto
+			
+- Vamos tirar o javascript da página de CadastroCerveja.html e vamos criar em um arquivo separado.
+	
+- Crie dentro da pasta static/javascripts um arquivos .js chamado cerveja.upload-foto.js.
+
+- Estrutura básica do script.
+
+	var BeeBee = BeeBee || {}; // caso não exista o objeto ele cria um novo objeto
+
+	BeeBee.UploadFoto = (function() {
+		
+		function UploadFoto() { // função construtora do uploadFoto		
+			
+		}
+		
+		UploadFoto.prototype.iniciar = function () {
+			
+		}
+		
+		return UploadFoto; // o retorno da função BeeBee.UploadFoto = (function() {
+		
+	})(); // o "();" executa a função - BeeBee.UploadFoto
+
+
+	$(function() { // aqui é onde fazemos acontecer!!!
+		
+		var uploadFoto = new BeeBee.UploadFoto();
+		uploadFoto.iniciar();
+	});
+	
+- Agora vamos começar a migrar o código .js da página de cadastro de cerveja para aqui.
+
+1 - vamos iniciar as variaveis no contrutor.
+
+	- Substuir a declaração var por .this.
+	- Comentar provisoriamente this.htmlFotoCerveja = template...
+	
+			function UploadFoto() { // função construtora do uploadFoto
+		
+				this.inputNomeFoto = $('input[name=foto]');
+				this.inputContentType = $('input[name=contentType]');
+				
+				this.htmlFotoCervejaTemplate = $('#foto-cerveja').html();
+				this.template = Handlebars.compile(this.htmlFotoCervejaTemplate); // esse pode demorar um pouco mais para iniciarlizar então é bom deixar no começo
+				
+				//this.htmlFotoCerveja = template({nomeFoto: resposta.nome}); // template não iniciliza agora, pois só inicializa depois que o this.template estiver carregado
+				
+				this.containerFotoCerveja = $('.js-container-foto-cerveja');
+				
+				this.uploadDrop = $('#upload-drop');
+				
+			}
+			
+			UploadFoto.prototype.iniciar = function () {
+				
+			}
+			
+2 - Acrescentar agora no prototype.inicilizar os settings e depois as chamadas do UIKit.
+		UIkit.uploadSelect($('#upload-select'), settings);
+		UIkit.uploadDrop($('#upload-drop'), settings);
+		
+		- Aqui no prototype.iniciar é onde realmente o uikit será inicializado.
+		
+		- Também substitui a linha UIkit.uploadDrop($('#upload-drop'), settings); por UIkit.uploadDrop(this.uploadDrop, settings), pois já temos essa variavel inicializada.
+	
+	*******************************************************
+		
+			- No settings vamos tentar tirar esse conteúdo chamapado, estatico do action.
+				action: '/beebee/fotos',
+				
+			- Para isso ir na <div> da classe cerveja e acrescentar um elemento do thymeleaf "th:attr" que criar um novo atributo para um determinado elemento.
+				- Passamos esse atributo data que você verá a seguir, pois o thuymeleaf resolve isso e passa para esse atributo o valor da url e depois no JQuery
+					conseguimos pegar esse valor com o atributo data do JQuery.
+					- Se quiser é só  acrescentar na <div> que ir em inspecionar no browser para ver ele informando esse valor para o th:attr.
+						
+						Na div do projeto cadastrocerveja.html fica assim.
+							<div class="js-container-foto-cerveja" th:attr="data-url-fotos=@{/fotos}">
+						
+						Fica assim no browser inspecionado o data_url-fotos, o thymeleaf renderizou ele.
+							<div class="js-container-foto-cerveja" data-url-fotos="/beebee/fotos">
+						
+			- Lembrando que já temos o container "js-container-foto-cerveja". E como está junto com o data-url-fotos é só chamar .data('url-fotos').
+				Ficou assim agora o action:
+					
+					action: this.containerFotoCerveja.data('url-fotos'),
+					
+			- Codigo completo do prototype, por enquanto.
+			
+					UploadFoto.prototype.iniciar = function () {
+							var settings = {
+								type: 'json',
+								filelimit: 1,
+								allow: '*.(jpg|jpeg|png)',
+								action: this.containerFotoCerveja.data('url-fotos'), // pegando a url do th:attr de CadastroCerveja
+								
+							}
+							UIkit.uploadSelect($('#upload-select'), settings);
+							UIkit.uploadDrop(this.uploadDrop, settings);
+						}
+						
+						return UploadFoto; // o retorno da função BeeBee.UploadFoto = (function() {
+						
+					})();
+					
+	*******************************************************
+		
+3 - Precisamos mudar o complete: function(resposta) {...}
+
+	- Vamos fazer um bind para que possamos ter acesso a todos o this. que tem no nosso objeto.
+	
+		- Nosso prototype então ficou assim agora, mas jaja será completado, vamos por partes:
+		
+			UploadFoto.prototype.iniciar = function () {
+					var settings = {
+						type: 'json',
+						filelimit: 1,
+						allow: '*.(jpg|jpeg|png)',
+						action: this.containerFotoCerveja.data('url-fotos'),
+						complete: onUploadCompleto.bind(this) // esse (this) acessa todos os this. que tem no método construtor e não esquecer de criar a função onUploadCompleto()
+						
+					}
+					UIkit.uploadSelect($('#upload-select'), settings);
+					UIkit.uploadDrop(this.uploadDrop, settings);
+				}
+				
+				function onUploadCompleto(resposta) {
+					this.inputNomeFoto.val(resposta.nome);
+					this.inputContentType.val(resposta.contenType);	
+					
+					this.uploadDrop.addClass('hidden');
+					var htmlFotoCerveja = this.template({nomeFoto: resposta.nome});
+					containerFotoCerveja.append(htmlFotoCerveja);
+				}
+				
+				return UploadFoto; // o retorno da função BeeBee.UploadFoto = (function() {
+				
+			})(); // o "();" executa a função - BeeBee.UploadFoto
+			
+4 - Agora colocar a parte do botão de remover a foto.
+
+	Código completo do prototype.iniciar:
+	
+			UploadFoto.prototype.iniciar = function () {
+					var settings = {
+						type: 'json',
+						filelimit: 1,
+						allow: '*.(jpg|jpeg|png)',
+						action: this.containerFotoCerveja.data('url-fotos'),
+						complete: onUploadCompleto.bind(this) // esse (this) acessa todos os this. que tem no método construtor e não esquecer de criar a função onUploadCompleto()
+						
+					}
+					UIkit.uploadSelect($('#upload-select'), settings);
+					UIkit.uploadDrop(this.uploadDrop, settings);
+				}
+				
+				function onUploadCompleto(resposta) {
+					this.inputNomeFoto.val(resposta.nome);
+					this.inputContentType.val(resposta.contenType);	
+					
+					this.uploadDrop.addClass('hidden');
+					var htmlFotoCerveja = this.template({nomeFoto: resposta.nome});
+					containerFotoCerveja.append(htmlFotoCerveja);
+					
+					//agora vem a parte para remover a foto
+					$('.js-remove-foto').on('click', onRemoverFoto.bin(this));
+				}
+				
+				function onRemoverFoto() {
+					$('.js-foto-cerveja').remove();
+					uploadDrop.removeClass('hidden');
+					inputNomeFoto.val('');
+					inputContentType.val('');
+				}
+				
+				return UploadFoto; // o retorno da função BeeBee.UploadFoto = (function() {
+				
+			})();
+			
+5 - Agora apagar o script .js da pagina de CadastroCerveja.html e adicionar o <script> no <th:block>
+		<script th:src="@{/javascripts/cerveja.upload-foto.js}"></script>
+		
+		
+		- Código completo de cerveja.upload-foto.js.
+		
+			var BeeBee = BeeBee || {}; // caso não exista o objeto ele cria um novo objeto
+
+			BeeBee.UploadFoto = (function() {
+				
+				function UploadFoto() { // função construtora do uploadFoto
+					
+					this.inputNomeFoto = $('input[name=foto]');
+					this.inputContentType = $('input[name=contentType]');
+					
+					this.htmlFotoCervejaTemplate = $('#foto-cerveja').html();
+					this.template = Handlebars.compile(this.htmlFotoCervejaTemplate); // esse pode demorar um pouco mais para iniciarlizar então é bom deixar no começo
+					
+					//this.htmlFotoCerveja = template({nomeFoto: resposta.nome}); // template não iniciliza agora, ele será inicializado no prototype na função onUploadCompleto()
+					
+					this.containerFotoCerveja = $('.js-container-foto-cerveja');
+					
+					this.uploadDrop = $('#upload-drop');
+					
+				}
+				
+				UploadFoto.prototype.iniciar = function () {
+					var settings = {
+						type: 'json',
+						filelimit: 1,
+						allow: '*.(jpg|jpeg|png)',
+						action: this.containerFotoCerveja.data('url-fotos'),
+						complete: onUploadCompleto.bind(this) // esse (this) acessa todos os this. que tem no método construtor e não esquecer de criar a função onUploadCompleto()
+						
+					}
+					UIkit.uploadSelect($('#upload-select'), settings);
+					UIkit.uploadDrop(this.uploadDrop, settings);
+				}
+				
+				function onUploadCompleto(resposta) {
+					this.inputNomeFoto.val(resposta.nome);
+					this.inputContentType.val(resposta.contenType);	
+					
+					this.uploadDrop.addClass('hidden');
+					var htmlFotoCerveja = this.template({nomeFoto: resposta.nome});
+					containerFotoCerveja.append(htmlFotoCerveja);
+					
+					//agora vem a parte para remover a foto
+					$('.js-remove-foto').on('click', onRemoverFoto.bin(this));
+				}
+				
+				function onRemoverFoto() {
+					$('.js-foto-cerveja').remove();
+					uploadDrop.removeClass('hidden');
+					inputNomeFoto.val('');
+					inputContentType.val('');
+				}
+				
+				return UploadFoto; // o retorno da função BeeBee.UploadFoto = (function() {
+				
+			})(); // o "();" executa a função - BeeBee.UploadFoto
+
+
+			$(function() { // aqui é onde fazemos acontecer!!!
+				
+				var uploadFoto = new BeeBee.UploadFoto();
+				uploadFoto.iniciar();
+			});
+
+
+6 - Ir no browser na url do projeto e testar inserindo nova foto, tanto selecionando arquivo quanto arrastando a foto.
+	- E verificar no inspecionar para ver se está atribuindo os valores corretamente e depois apagando quando clicar no botão "x" para fechar a foto.
