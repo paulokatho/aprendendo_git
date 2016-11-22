@@ -1,0 +1,116 @@
+		Salvando o nome da foto da cerveja
+		
+- Então vamos aplicar a migração da cerveja para salvarmos no banco o nome da foto da cerveja
+	e por enquanto deixamos o nome que vem mesmo e também colocar o content-type para saber o
+	tipo de arquivo que é.
+	
+	Também retornar no controller para poder salvar hora que salvar o cadastro da cerveja.
+	
+- No FotosController vamos substituir o <String> do retorno do método DeferredResult, por um
+	objeto auxiliar responsavel por trafegar informações para gente.
+	
+*********
+	ESSE KARA ESPECIAL É O DTO (DATA TRANSFER OBJECT).
+	ELE TRAFEGA DADOS PARA GENTE.
+	
+	ELE NÃO ESTÁ LIGADO DIRETAMENTE AO MODELO.	
+	
+*********	
+
+- Vamos criar uma classe no pacote .beebee.dto chamada FotoDTO.
+
+	- Teremos o nome e o contentType e gerar os geters e seters.
+	- Também gerar o contrutor da classe.
+	
+	- No FotosController ao inves de retornar a <String> alterar para <FotoDTO>.
+	- Na classe FotoStorageRunnable Também algerar de <String> para <FotoDTO>.
+		- Aqui alterar o setResult() para receber o nome e o contentType do objeto. Ver no codigo abaixo.
+		
+	- Se selecionar uma foto e olhar no console>Network é possível ver que ele recebeu como json o nome 
+		e o content-type da foto e é isso que queremos salvar no banco.
+
+- Agora precisamos acrescentar a coluna foto e content-type na tabela de cerveja.
+	Para isso vamos usar o flyway, vamos clicar na pasta <db> e vamos criar um novo file chamado
+		V03__criar_colunas_foto_e_contentType_na_Cerveja.sql
+		
+		- caso dê erro na hora de migrar no flyway pode ser apagado o schema do banco e fazer novamente.
+		
+- Agora como vamos fazer para na hora que clicar no botão salvar ele salvar no banco a foto e o contentType.
+
+- Quem faz o upload da foto é o uiKit e ele tem um método de CallBack ue podemos passar uma função para ele chamar
+	quando o upload tiver sido feito.
+	
+	- Vamos colocar ele fixo no .js mesmo, mas depois colocamos ele no padrão certinho.
+
+		complete: function(resposta) { // está aqui nesse objeto "resposta" as informações da foto.
+									
+			console.log('resposta', resposta);
+		}
+		
+	- Apos rodar a aplicação novamente e ir no browser e verificar em inspecionar e ver na aba console a resposta.
+		Nesse caso veio o objeto javascript com o nome e o contentType.
+		- Apagar o "console.log", era somente para teste.
+		
+		*** Depois coloco o codigo .js inteiro ***
+		
+	- Agora é necessário no cadastro de cerveja, ser colocado na div class="form-group" um <input> para ser submetido 
+		para o servidor, quando for salvar a foto.
+		
+		<input type="hidden" th:field="*{foto}">
+		<input type="hidden" th:field="*{contentType}">
+		
+		- E setando essas informações via .js.
+		
+		- Vamos fazer via JQuery.
+		
+		complete: function(resposta) {
+				$('input[name=foto]').val(resposta.nome);
+				$('input[name=contentType]').val(resposta.contentType);					
+		}
+		
+	- Depois ir no modelo Cerveja para adicionar o tratamento.
+	
+		private String foto;
+		
+		@Column(name = "content_type")
+		private String contentType;
+		
+	- Então criou o objeto resposta contendo as informações da foto.
+		O servidor já está retornando a foto e o contentType.
+		Estamos setando essas duas informações no <input=hidden>.
+		Criamos os dois campos na classe Cerveja e geramos os getters e setters.
+		
+	- $('input[name=foto]')
+		Nesse momento foi colocado o name no JQuery para que o th:field pegue o campo corretamente.
+		
+- Ir na inspeção do browser para verificar como está setado o valor do campo e ver se realmente o 
+	input está pegando o valor corretamente.
+	
+	<!-- Bloco acrescentado na Aula 11.2 - Salvando estilo rapido com ajax / -->	
+	<th:block layout:fragment="javascript-extra"><!-- javascript extra que quero carregar desta página -->
+		<script th:src="@{/javascripts/estilo.cadastro-rapido.js}"></script>
+		<script th:src="@{/javascripts/vendors/uikit.min.js}"></script>
+		<script th:src="@{/javascripts/vendors/upload.min.js}"></script>
+		
+		<script>
+		$(function() {
+			var settings = {
+					type: 'json',
+					filelimit: 1,
+					allow: '*.(jpg|jpeg|png)',
+					action: '/beebee/fotos',
+					complete: function(resposta) {
+							$('input[name=foto]').val(resposta.nome);
+							$('input[name=contentType]').val(resposta.contenType);					
+					}
+			};
+			
+			UIkit.uploadSelect($('#upload-select'), settings);
+			UIkit.uploadDrop($('#upload-drop'), settings);
+		});
+		</script>
+	</th:block>
+
+
+
+
