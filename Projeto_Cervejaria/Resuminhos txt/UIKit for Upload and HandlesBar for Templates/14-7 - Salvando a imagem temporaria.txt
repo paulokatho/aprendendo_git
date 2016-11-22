@@ -1,0 +1,150 @@
+
+
+	Salvando a imagem temporária
+	
+- Nesse momento vamos implementar o método salvar temporariamente, para conseguir salvar certinho a foto.
+
+- Agora já temos o método salvarTemporariamente() implementado no FotoStorageRunnable que é chamado e injetado pelo FotosController.
+
+- O método de salvar vai ficar no FotoStorageLocal e ficou por enquanto assim:
+
+	@Override
+	public void salvarTemporariamente(MultipartFile[] files) {
+		
+		if(files != null && files.length > 0) {
+			MultipartFile arquivo = files[0];
+			try {
+				arquivo.transferTo(new File(this.localTemporario.toAbsolutePath().toString() + getDefault().getSeparator() + arquivo.getOriginalFilename()));
+			} catch (Exception e) {
+				throw new RuntimeException("Erro salvando a foto na pasta temporária");
+			}
+		}
+	}
+	
+	- Só chamar o .transferTo.
+	- getDefault().getSeparator() é para criar a / no linux e no windows ele cria a barra invertida \.
+	
+	- Subir o servidor e ir no cadastro de cerveja e inserir uma nova foto de cerveja que é para ele salvar no caminho corretamente.
+	
+	
+- Vamos dar uma melhorada.
+- Imagine que ao salvar a foto o usuário coloque o nome da foto somente como foto.png, a chance de ter 2 fotos com o mesmo nome vai ser muito grande. 
+	Então vamos utilizar um gerador de string que vai gerar um código que é praticamente impossível de repetir.
+
+- Sendo assim vamos criar outro metodo privado, pois o criarPastas() também é private. Não tinha reparado neh? kkkkkkkkk
+
+	private String renomearArquivo(String nomeOriginal) {
+		String novoNome = UUID.randomUUID().toString() + "_" + nomeOriginal;// vai concatenar o hash code com um underscore e o nome que a foto vier
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug(String.format("Nome original: %s, novo nome: %s", nomeOriginal, novoNome));
+		}
+		
+		return novoNome;
+	}
+	
+	- No método salvarTemporariamente também tem que alterar a linha passando o renomearArquivo(arquivo.getOriginalFilename()
+		arquivo.transferTo(new File(this.localTemporario.toAbsolutePath().toString() + getDefault().getSeparator() + renomearArquivo(arquivo.getOriginalFilename())));
+		
+
+- Se formos inspecionar o html da tela que foi gerado agora veremos que não está concatenando o hashcode lá no html. Então precisamos pegar ele para poder salvar depois
+	no banco.
+	- Vamos mandar a String de volta para o FotoStorageLocal para pegarmos ela.
+	
+	- Declarar uma variavel String no metodo salvar temporariamente e vamos preencher essa váriavel com renomearArquivo(arquivo.getOriginalFilename().
+		E alterar novamente a instrução arquivo.transferTo(...).
+		
+	- Também vamos alterar a assinatura desse metodo salvar que agora vai retornar uma String.
+		- Não esquecer de mudar na interface FotoStorage o retorno para String do método.
+		
+		- No fim do try retornamos o novoNome;
+		
+		Veja o código:
+
+public class FotoStorageLocal implements FotoStorage {
+
+	private static final Logger logger = LoggerFactory.getLogger(FotoStorageLocal.class);
+	
+	private Path local;
+	private Path localTemporario;
+	
+	public FotoStorageLocal() {
+		// dentro de HOME vamos criar uma pasta beebeefotos e depois chamamos o método criarPastas()
+		this(getDefault().getPath(System.getenv("USERPROFILE"), ".beebeefotos"));
+		
+	}
+	
+	public FotoStorageLocal(Path path) {
+		
+		this.local = path;
+		criarPastas();
+	}
+	
+	@Override
+	public String salvarTemporariamente(MultipartFile[] files) {
+		String novoNome = null;// a variavel foi implementada aqui, pois se estourar exception o catch consegue capturar
+		if(files != null && files.length > 0) {
+			MultipartFile arquivo = files[0];
+			novoNome = renomearArquivo(arquivo.getOriginalFilename());
+			try {
+				arquivo.transferTo(new File(this.localTemporario.toAbsolutePath().toString() + getDefault().getSeparator() + novoNome));
+			} catch (Exception e) {
+				throw new RuntimeException("Erro salvando a foto na pasta temporária");
+			}
+		}
+		return novoNome;
+	}
+	
+	private void criarPastas() {
+		// aqui pode lançar uma exception então vamos tratar
+			
+			try {
+				Files.createDirectories(this.local);
+				this.localTemporario = getDefault().getPath(this.local.toString(), "temp");
+				Files.createDirectories(this.localTemporario);// vai criar no diretorio acima a pasta "temp"
+				
+				/*esse if vai criar no console do eclipse essas informações para que nós possamos mapear e verificar
+					corretamente o que está acontecendo no sistema. Aqui quando subir a aplicação ele já vai criar as 
+					pastas e mostrar no logo os paths
+				*/
+				if(logger.isDebugEnabled()) {
+					logger.debug("Pastas criadas para salvar fotos.");
+					logger.debug("Pasta default: " + this.local.toAbsolutePath());
+					logger.debug("Pasta temporária: " + this.localTemporario.toAbsolutePath());
+				}
+			} catch (IOException e) {
+				throw new RuntimeException("Erro criando pasta para salvar foto", e);
+			}		
+		}
+	
+	private String renomearArquivo(String nomeOriginal) {
+		String novoNome = UUID.randomUUID().toString() + "_" + nomeOriginal;
+		
+		if(logger.isDebugEnabled()) {
+			logger.debug(String.format("Nome original: %s, novo nome: %s", nomeOriginal, novoNome));
+		}
+		
+		return novoNome;
+	}
+}
+
+- Agora vamos na classe FotoStorageRunnable.	
+	- Vamos passar a string novoNovo no método run() também.
+	
+			@Override
+			public void run() {
+				
+				// TODO: Aqui é a parte demorada - Salvar a foto no sistema de arquivos...
+				String nomeFoto = this.fotoStorage.salvarTemporariamente(files);
+				String contentType = files[0].getContentType();
+				resultado.setResult(new FotoDTO(nomeFoto, contentType)); // isso chega no browser para o cliente como response		
+
+			}
+		}
+
+- Então agora o código html também está recebendo hashString_nomeDaFoto.png(essa hash pode ser chamada de id também) , por exemplo, para poder salvar no banco.
+
+	- Salvar uma nova cerveja para ver se está tudo certinho.
+		
+	
+	
