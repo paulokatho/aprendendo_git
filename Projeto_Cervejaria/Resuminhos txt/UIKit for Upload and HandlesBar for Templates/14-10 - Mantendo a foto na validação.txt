@@ -1,0 +1,25 @@
+
+			Mantendo a foto na validação 
+			
+- Quando se clica no botão de salvar a página passa pela validação dos campos, porém se a foto foi carregada, ela vai sumir. Mas ao inspecionar o browser veremos
+	que o nome e o contentype estão lá.
+	
+- Abrir o arquivo cerveja.upload-foto.js.
+	- Quando é clicado no botão salvar a requisição é enviada para o servidor e então ela volta. Quando essa requisição retorna ela passa pelo arquivo cerveja.upload-foto.js.
+		e executa "UploadFoto.prototype.iniciar = function () { }".
+	
+	- Então se ele extá executando o método iniciar faremos o seguinte.
+		- Vou verificar se existe um valor no componente da foto, e existindo um valor então eu quero exibir esse valor na tela.
+		
+		- Acrescentamos o if abaixo no método iniciar do .js.
+			
+			//para manter a foto na tela após clicar em salvar e não passar pela validação dos campos. Aula 14-10
+				if (this.inputNomeFoto.val()) {
+				//call() é para dizer que é o mesmo contexto que foi enviado na requisição anterior, não é um novo objeto
+					onUploadCompleto.call(this, {nome: this.inputNomeFoto.val(), contentType: this.inputContentType.val()});
+				}
+				
+				- Se tirar o call() ele vai dar erro, pois não vai encontrar a informação do nome e contentType depois que a requisição voltar.
+					Ou seja, para os "this." das variaveis continuarem funcionando.
+					
+				
