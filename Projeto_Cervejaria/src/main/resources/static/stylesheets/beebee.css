@@ -8,6 +8,11 @@
 	font-size: 18px;
 }
 
+/* Classe para a inserir os "*" nos campos obrigatórios */
+.bb-required > .control-label:after {
+	content: "*"
+}
+
 /*
 #####################
 # COMPONENTES
