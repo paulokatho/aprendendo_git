@@ -1,0 +1,31 @@
+
+		Detalhe nos campos obrigatórios (*)
+		
+- Um detalhe que a maior parte dos sistemas tem é um asterisco na frente dos campos que são obrigatórios.
+	Só que esse asterisco não vamos inserir diretamente no label na pagina html.
+
+- Vamos criar uma classe css para fazer isso.
+
+
+- Para iniciar vá até a <div class> de SKU e insira uma nova classe "bb-required".
+
+	<div class="row">
+		<div class="col-sm-2  form-group  bb-required" beebee:classforerror="sku">
+			<label for="sku" class="control-label">SKU</label>
+			<input id="sku" type="text" class="form-control" th:field="*{sku}"/>
+		</div>
+	</div>
+	
+- Agora abrir o beebee.css na pasta static.
+
+	- No espaço # UTILIDADES vamos criar o bb-required
+	
+		.bb-required > .control-label:after {
+			content: "*"
+		}
+		
+	- content é o tipo do conteúdo que será adicionado.
+	
+	- > .control-label:after
+		- Aqui é onde será adicionado, ou seja, depois do control-label que está lá na pagina html. Onde foi adicionada a classe,
+			no control label onde a classe bb-required foi inserida.
