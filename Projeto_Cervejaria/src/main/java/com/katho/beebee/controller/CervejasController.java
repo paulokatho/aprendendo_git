@@ -1,5 +1,6 @@
 package com.katho.beebee.controller;
 
+import javax.management.AttributeValueExp;
 import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.katho.beebee.model.Cerveja;
 import com.katho.beebee.model.Origem;
 import com.katho.beebee.model.Sabor;
+import com.katho.beebee.repository.Cervejas;
 import com.katho.beebee.repository.Estilos;
 import com.katho.beebee.service.CadastroCervejaService;
 
@@ -27,6 +29,10 @@ public class CervejasController {
 	
 	@Autowired
 	private CadastroCervejaService cadastroCervejaService;
+	
+	@Autowired
+	private Cervejas cervejas;
+	
 	
 	@RequestMapping("/novo")
 	public ModelAndView novo(Cerveja cerveja) {
@@ -58,6 +64,8 @@ public class CervejasController {
 		mv.addObject("estilos", estilos.findAll());
 		mv.addObject("sabores", Sabor.values());
 		mv.addObject("origens", Origem.values());
+		
+		mv.addObject("cervejas", cervejas.findAll());
 		
 		return mv;
 	}
