@@ -1,0 +1,177 @@
+
+
+				Prototipo da pesquisa da cerveja
+				
+- Vamos começar abrindo o CervejasController
+	- Iremos começando por tirar os cervejas repetidos dos @Mappings.
+		
+		@RequestMapping("/cervejas/novo")
+		public ModelAndView novo(Cerveja cerveja) { }
+		
+		@RequestMapping(value = "/cervejas/novo", method = RequestMethod.POST)
+		public ModelAndView cadastrar(@Valid Cerveja cerveja, BindingResult result, Model model, RedirectAttributes attributes) {}
+	
+	- Colocamos acima da anotação @Controller da classe o @RequestMappings agora vai ficar assim:
+	
+		
+		@Controller
+		@RequestMapping("/cervejas")
+		public class CervejasController { ... } // Classe Cerveja
+		
+		@RequestMapping("/novo")
+		public ModelAndView novo(Cerveja cerveja) { }
+		
+		@RequestMapping(value = "/novo", method = RequestMethod.POST)
+		public ModelAndView cadastrar(@Valid Cerveja cerveja, BindingResult result, Model model, RedirectAttributes attributes) {}
+		
+	- Implementar um novo método para pesquisar. Será feita via GET, com a assinatura @GetMapping. Para se ter a URL com os parametrôs que serao passados e também poderá ser feita a pesquisa
+		via algum filtro, por exemplo SKU. Porém será implementado mais tarde.
+	
+			@GetMapping
+			public ModelAndView pesquisar() {
+				ModelAndView mv = new ModelAndView("cerveja/PesquisaCervejas");
+				
+				return mv;
+			}
+			
+	- Vamos criar também a pagina de pesquisa de cervejas "PesquisaCervejas.html". Criar esse arquivo dentro da pasta de cerveja em template.
+		
+		- Começando implementar a tela de pesquisa de cerveja.
+
+		- Será colocado na página um botão de back para voltar para a página anterior.
+		- Temos que copiar da tela de cadastro de cerveja o doctype com a importação dos layouts, thymeleaf e afins. Também podemos copiar
+			o <head> <body>, porem do body somente o <section> e a <div> com o "pag-header", como abaixo:
+			
+				<!DOCTYPE html>
+				<html lang="pt" xmlns="http://www.w3.org/1999/xhtml" 
+					xmlns:th="http://www.thymeleaf.org"
+					xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+					layout:decorator="layout/LayoutPadrao"
+					xmlns:beebee="http://beebee.katho.com">
+					
+				<head>
+					<title>Pesquisa de cerveja</title>
+					<link rel="stylesheet" th:href="@{/stylesheets/vendors/upload.min.css}"/>	
+				</head>
+
+				<body>
+				<section layout:fragment="conteudo">	
+					<div class="page-header">
+						<div class="container-fluid">
+							<h1>Pesquisa de cerveja</h1>
+						</div>
+					</div>	
+				</section>
+				</body>
+				</html>
+				
+		- Agora na pesquisa cerveja vamos acrescentar o label de pesquisa de cervejas e também o botão para voltar a tela de cadastro de cerveja.
+			- Isso tudo dentro do <section>.
+			
+				<div class="page-header">
+					<div class="container-fluid">
+						<div class="row">
+							<div class="col-sm-10">								
+								<h1>Pesquisa de cerveja</h1>
+							</div>
+						<!-- Botão para voltar para a página de cadastro de cerveja -->
+							<div class="col-sm-2">
+								<div class="aw-page-header-controls">
+									<a class="btn  btn-default" th:href="@{/cervejas/novo}">
+										<i class="glyphicon  glyphicon-plus-sign"></i> <span class="hidden-xs  hidden-sm">Nova cerveja</span>
+									</a>
+								</div>				
+							</div>
+						</div>
+					</div>
+				</div>	
+				
+			- *** Acrescentar essas <div> do botão na tela de cadastro de cerveja.
+			
+		- Tem que acrescentar agora a <div> que vai conter a tag <form>. E não esquecer que o form agora é do tipo "POST".
+		
+			<div class="container-fluid">
+				<form method="GET">				
+				</form>
+			</div>
+
+		- Bom, agora dentro do <form> vamos implentar o que queremos como filtro.
+		
+			<div class="container-fluid">
+				<form method="GET">
+					
+					<div class="row">
+						<div class="form-group  col-sm-6">
+							<label class="control-label" for="sku">SKU</label>
+							<input type="text" class="form-control" id="sku" autofocus="autofocus"/>
+						</div>
+						
+						<div class="form-group  col-sm-6" >
+							<label class="control-label" for="nome">Nome</label>
+							<input type="text" class="form-control" id="nome"/>
+						</div>
+					</div>
+					
+					<div class="row">
+						<div class="form-group  col-sm-6">
+							<label class="control-label" for="estilo">Estilo</label>
+							<select id="estilo" class="form-control">
+								<option value="">Todos os estilos</option>
+								<option th:each="estilo : ${estilos}" th:text="${estilo.nome}" th:value="${estilo.codigo}"></option>
+							</select>
+						</div>
+						
+						<div class="form-group  col-sm-6">
+							<label class="control-label" for="sabor">Sabor</label> 
+							<select id="sabor" class="form-control">
+								<option value="">Todos os sabores</option>
+								<option th:each="sabor : ${sabores}" th:value="${sabor}" th:text="${sabor.descricao}"></option>
+							</select>
+						</div>
+					</div>
+					
+					<div class="row">
+						<div class="form-group  col-sm-6">
+							<label class="control-label">Origem</label> 
+							<div>
+								<th:block th:each="origem : ${origens}">
+									<div class="radio  radio-inline">
+										<input th:id="|id_${origem}|" type="radio" th:value="${origem}" name="origem"/>
+										<label th:for="|id_${origem}|" th:text="${origem.descricao}">Nacional</label>
+									</div>
+								</th:block>
+								<div class="radio  radio-inline">
+									<input id="todasOrigens" type="radio" th:checked="*{origem} == null" name="origem"/>
+									<label for="todasOrigens" >Todas</label>
+								</div>
+							</div>
+						</div>
+
+						<div class="col-sm-6  form-group">
+							<label for="precoDe">Preço unitário</label>
+							<div class="form-inline">
+								<input type="text" class="form-control  aw-form-control-inline-sm  js-decimal" id="precoDe"/>
+								<label for="precoAte" class="aw-form-label-between">até</label>
+								<input type="text" class="form-control  aw-form-control-inline-sm  js-decimal" id="precoAte"/>
+							</div>
+						</div>
+					</div>
+					
+					<button type="submit" class="btn  btn-primary">Pesquisar</button>
+				</form>
+
+			</div> <!-- fechando o <div class="container-fluid"> -->
+			
+		- Lembrar que o estilo pode ser buscado todos os estilos e este ja temos implementados, então lembrar de colocar no controller.
+			
+			@GetMapping
+			public ModelAndView pesquisar() {
+				ModelAndView mv = new ModelAndView("cerveja/PesquisaCervejas");
+				
+				mv.addObject("estilos", estilos.findAll());
+				mv.addObject("sabores", Sabor.values());
+				mv.addObject("origens", Origem.values());
+				return mv;
+			}
+			
+		- 
