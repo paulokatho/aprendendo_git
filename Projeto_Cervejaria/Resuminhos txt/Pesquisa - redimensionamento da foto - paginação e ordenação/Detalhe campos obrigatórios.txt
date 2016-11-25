@@ -29,3 +29,5 @@
 	- > .control-label:after
 		- Aqui é onde será adicionado, ou seja, depois do control-label que está lá na pagina html. Onde foi adicionada a classe,
 			no control label onde a classe bb-required foi inserida.
+			
+			
