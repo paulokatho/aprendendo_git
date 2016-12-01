@@ -1,0 +1,129 @@
+
+- Para um novo arquivo.
+
+	Ctrl+N
+
+- Para identar o seu código.
+
+	Ctrl+Shift+F
+	
+- Para renomear uma variável e essa alteração ocorrer em toda a classe que ela estiver sendo utiilizada.
+
+	Alt+Shift+R
+	
+- Para fechar várias de uma véz só.
+
+	Ctrl+Shif+W
+	
+- Para fechar uma aba de cada vez
+
+	Ctrl+W
+
+- Para apagar linha de código implementada, caso haja necessidade de apagar o que foi feito. Esse comando apaga a linha toda.	
+
+	Ctrl+D
+	
+- Para visualizar em tela cheia o que você está programando
+
+	Ctrl+M
+	
+- Para mudar o código de lugar, para cima ou para baixo.
+
+	Alt+(Seta para baixo ou Seta para cima)
+	
+- Para ajuda rápida do eclipse, quick fix. Exibe as possível opções, exemplo (criar classe, interface), para ver as opções quando se tem um erro.
+	
+	Ctrl+1
+	
+- Abre uma classe.
+
+	Ctrl+Shift+T
+	
+- Abre uma classe e também abre arquivos, exemplo, um arquivo README.txt esse comando também abre.
+	
+	Ctrl+Shift+R
+	
+- Exibe um combobox com as abas que estão abertas para você navegar entre elas
+
+	Ctrl+E
+	
+- Quando se está trabalhando em duas abas, mesmo que existam outras abertas também. É possível navegar entre as duas desse modo.
+
+	Ctrl+F6
+	
+- Para executar a aplicação. Sem ser com teste unitário.
+
+	Alt+Shif+X + J
+	
+- Para executar a aplicação. COM TESTE UNITÁRIO.
+
+	Alt+Shift+X + TESTE
+	
+-  Supondo que uma classe ainda não tenha os getters e os setters. Com esse comando ele te leva para uma janelinha na parte superior direita
+	da tela do eclipse, o Quick Acces, e então digite as iniciais do que você quer, exemplo "ggas" abreviação de (genereted getters and setter).
+	E então é só escolher os atributos que serão gerados e eles serão criados na sua classe.
+	
+	- Ctrl+3 + "ggas" e escolha os atributos.
+	
+- Para gerar hash code and equals.
+
+	- Ctrl+3 + "ghc" e escolha a opção gerar hash code and equals.
+	
+- Para gerar um construtor. "gcuf" (genereted contruction using fields).
+
+	Ctrl+3 + "gcuf"
+	
+- Exibe no Eclipse uma lista com todos os atalhos.
+
+	Ctrl+Shift+L
+	
+	************* LEVANDO AS CONFIGURAÇÕES PARA OUTRO WORKSPACE *************
+	
+- Como levar as configurações de um Workspace do Eclipse para outro Workspace.
+	- Crie um Workspace, exemplo Workspace 1 e depois será criado um Workspace 2 e então com essa dica você ficará sabendo como levar a configuração
+		do Workspace 1 para o 2.
+		
+	- Após criar o Workspace 1, crie um novo projeto java qualquer e também crie uma nova classe qualquer, exemplo "MinhaClasse.java".
+		Exibir as linhas: Clique com o botão direito na barra da classe MinhaClasse e seleciona Show Line Numbers, para exiber o número das linhas.
+		Aumentar o número de colunas: O número de colunas comum as vezes pode ser pequena, pois a resolução dos monitores é bem maior hoje em dia, então
+			podemos aumentar a quantidade de colunas.
+	
+		- Para isso vá em Eclipese>Preferences e na caixinha de pesquisa digite formater. Isso fica dentro de Java>Code Style>Formatter.
+			
+		- Agora clique em New> e de um nome Custom, por exemplo. E agora você pode customizar o que você quiser.
+		
+		- O número de colunas fica na aba "Line Wrapping". Entao do lado esquerdo ter uma caixinha no General Settings chamada Maximum line width e nesse
+			estara configurado com o tamanho "80".
+			Coloque por exemplo o tamanho "120" e salve e faça o teste na classe "MinhaClasse".
+	
+	- Desabilitando a correção ortografica.
+		- Ir em Preferences novamente e digitar "Spelling".
+			Então só clicar no checkbox para desabilitar "Enable Spell Checking".
+			
+	- Suspendendo todas as validações. Esse é interessante quando nós testamos o que estamos desenvolvendo.
+		- Ir em Preferences novamente digite "Validation" e desmarque a opção "Suspend all validators".
+		
+	- 34:43
+	-  Configurando o encoding para não ficar com caracteres estranhos, padronizar todos.
+		- Voltar em Preferences e digitar "encod" e selecionar General>Workspace.
+		- Habilitar a opção "Default UTF-8" em Text File Encoding.
+		- E também a opção "Default UNIX" em New Text File Line Delimiter.
+		
+	
+- Agora migrando as configrações para o Workspace 2.
+
+	- Crie o Workspace 2, se ainda não o fez.
+	
+	- Vá até o caminho.
+	
+		Workspace 1/Katho/.metadata/.plugins/.org.eclipse.core.runtime/.settings
+	
+		- Copie a essa pasta. Somente essa pasta, muito cuidado.
+	
+	- Copie para a pasta /.runtime - do Workspace 2.
+	
+		.metadata/.plugins/.org.eclipse.core.runtime
+		
+
+		
+		***** Mais informações nesse link http://blog.algaworks.com/atalhos-e-configuracoes-para-ganhar-produtividade-com-eclipse/?inf_contact_key=92793259d9d8b3ea60614f2557c306357d782c9817d27650ba3d6d23327456ba *****
