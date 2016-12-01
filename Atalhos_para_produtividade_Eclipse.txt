@@ -1,4 +1,6 @@
 
+		*** ATALHOS NO ECLIPSE ***
+
 - Para um novo arquivo.
 
 	Ctrl+N
