@@ -1,0 +1,5 @@
+
+
+- Icones do Egit
+
+	https://wiki.eclipse.org/EGit/User_Guide/State
